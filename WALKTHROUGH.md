@@ -1,9 +1,6 @@
 # Walkthrough: SQL Query Validator & AST Visualizer (Flex & Bison)
 
 We have successfully built, compiled, and verified a feature-rich **SQL Query Validator, AST Generator, and Compiler Lab Framework** written in C using **Flex** (lexer) and **Bison** (parser).
-
-
-agy --conversation=4451d976-d106-4130-9265-1dbe6d2cabe8
 ---
 
 ## 1. Accomplished Features
