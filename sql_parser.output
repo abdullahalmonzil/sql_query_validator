@@ -1,0 +1,4635 @@
+Terminals unused in grammar
+
+    RENAME
+    TO
+    INDEX
+    CHECK
+    CONSTRAINT
+    USING
+    MOD
+    CONCAT
+
+
+State 245 conflicts: 2 reduce/reduce
+
+
+Grammar
+
+    0 $accept: query_script $end
+
+    1 query_script: statement_list opt_semicolon
+    2             | ε
+
+    3 opt_semicolon: SEMICOLON
+    4              | ε
+
+    5 statement_list: statement_list SEMICOLON statement
+    6               | statement
+
+    7 statement: select_stmt
+    8          | insert_stmt
+    9          | update_stmt
+   10          | delete_stmt
+   11          | create_table_stmt
+   12          | alter_table_stmt
+   13          | drop_table_stmt
+   14          | truncate_table_stmt
+   15          | transaction_stmt
+
+   16 select_stmt: select_expr
+   17            | select_stmt UNION opt_all select_expr
+   18            | select_stmt EXCEPT select_expr
+   19            | select_stmt INTERSECT select_expr
+
+   20 opt_all: ALL
+   21        | ε
+
+   22 select_expr: SELECT opt_distinct target_list opt_from opt_where opt_group_by opt_having opt_order_by opt_limit
+
+   23 opt_distinct: DISTINCT
+   24             | ALL
+   25             | ε
+
+   26 target_list: target_list COMMA target_item
+   27            | target_item
+
+   28 target_item: STAR
+   29            | expr opt_alias
+
+   30 opt_alias: AS IDENTIFIER
+   31          | IDENTIFIER
+   32          | ε
+
+   33 opt_from: FROM from_clause
+   34         | ε
+
+   35 from_clause: table_ref_list
+
+   36 table_ref_list: table_ref_list COMMA table_ref
+   37               | table_ref
+
+   38 table_ref: IDENTIFIER opt_alias
+   39          | LPAREN select_stmt RPAREN AS IDENTIFIER
+   40          | table_ref join_type table_ref ON expr
+
+   41 join_type: JOIN
+   42          | INNER JOIN
+   43          | LEFT JOIN
+   44          | LEFT OUTER JOIN
+   45          | RIGHT JOIN
+   46          | RIGHT OUTER JOIN
+   47          | FULL JOIN
+   48          | FULL OUTER JOIN
+   49          | CROSS JOIN
+
+   50 opt_where: WHERE expr
+   51          | ε
+
+   52 opt_group_by: GROUP BY expr_list
+   53             | ε
+
+   54 opt_having: HAVING expr
+   55           | ε
+
+   56 opt_order_by: ORDER BY order_item_list
+   57             | ε
+
+   58 order_item_list: order_item_list COMMA order_item
+   59                | order_item
+
+   60 order_item: expr opt_asc_desc
+
+   61 opt_asc_desc: ASC
+   62             | DESC
+   63             | ε
+
+   64 opt_limit: LIMIT INT_LITERAL
+   65          | LIMIT INT_LITERAL OFFSET INT_LITERAL
+   66          | ε
+
+   67 insert_stmt: INSERT INTO IDENTIFIER VALUES insert_values_list
+   68            | INSERT INTO IDENTIFIER LPAREN expr_list RPAREN VALUES insert_values_list
+   69            | INSERT INTO IDENTIFIER select_stmt
+
+   70 insert_values_list: tuple_list
+
+   71 tuple_list: tuple_list COMMA tuple
+   72           | tuple
+
+   73 tuple: LPAREN expr_list RPAREN
+
+   74 update_stmt: UPDATE IDENTIFIER SET assignment_list opt_where
+
+   75 assignment_list: assignment_list COMMA assignment
+   76                | assignment
+
+   77 assignment: IDENTIFIER EQ expr
+
+   78 delete_stmt: DELETE FROM IDENTIFIER opt_where
+
+   79 create_table_stmt: CREATE TABLE IDENTIFIER LPAREN column_def_list RPAREN
+   80                  | CREATE TABLE IF_KW NOT_KW EXISTS IDENTIFIER LPAREN column_def_list RPAREN
+
+   81 column_def_list: column_def_list COMMA column_def
+   82                | column_def
+
+   83 column_def: IDENTIFIER data_type opt_column_constraints
+   84           | PRIMARY KEY LPAREN IDENTIFIER RPAREN
+   85           | FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+   86 data_type: INT_TYPE
+   87          | VARCHAR_TYPE LPAREN INT_LITERAL RPAREN
+   88          | CHAR_TYPE LPAREN INT_LITERAL RPAREN
+   89          | TEXT_TYPE
+   90          | FLOAT_TYPE
+   91          | DOUBLE_TYPE
+   92          | DECIMAL_TYPE LPAREN INT_LITERAL COMMA INT_LITERAL RPAREN
+   93          | BOOLEAN_TYPE
+   94          | DATE_TYPE
+   95          | TIMESTAMP_TYPE
+
+   96 opt_column_constraints: opt_column_constraints column_constraint
+   97                       | ε
+
+   98 column_constraint: PRIMARY KEY
+   99                  | NOT_KW NULL_KW
+  100                  | UNIQUE
+  101                  | AUTO_INCREMENT
+  102                  | DEFAULT expr
+
+  103 alter_table_stmt: ALTER TABLE IDENTIFIER ADD COLUMN column_def
+  104                 | ALTER TABLE IDENTIFIER DROP COLUMN IDENTIFIER
+
+  105 drop_table_stmt: DROP TABLE IDENTIFIER
+  106                | DROP TABLE IF_KW EXISTS IDENTIFIER
+
+  107 truncate_table_stmt: TRUNCATE TABLE IDENTIFIER
+
+  108 transaction_stmt: BEGIN_KW opt_transaction
+  109                 | COMMIT
+  110                 | ROLLBACK
+  111                 | SAVEPOINT IDENTIFIER
+
+  112 opt_transaction: TRANSACTION
+  113                | ε
+
+  114 expr_list: expr_list COMMA expr
+  115          | expr
+
+  116 expr: expr OR expr
+  117     | expr AND expr
+  118     | NOT_KW expr
+  119     | expr EQ expr
+  120     | expr NE expr
+  121     | expr LT expr
+  122     | expr GT expr
+  123     | expr LE expr
+  124     | expr GE expr
+  125     | expr LIKE expr
+  126     | expr IN LPAREN expr_list RPAREN
+  127     | expr IN LPAREN select_stmt RPAREN
+  128     | expr BETWEEN expr AND expr
+  129     | expr IS NULL_KW
+  130     | expr IS NOT_KW NULL_KW
+  131     | expr PLUS expr
+  132     | expr MINUS expr
+  133     | expr STAR expr
+  134     | expr SLASH expr
+  135     | MINUS expr
+  136     | LPAREN expr RPAREN
+  137     | LPAREN select_stmt RPAREN
+  138     | func_call
+  139     | case_expr
+  140     | IDENTIFIER
+  141     | IDENTIFIER DOT IDENTIFIER
+  142     | STRING_LITERAL
+  143     | INT_LITERAL
+  144     | FLOAT_LITERAL
+  145     | NULL_KW
+
+  146 func_call: aggregate_func LPAREN opt_distinct expr RPAREN
+  147          | aggregate_func LPAREN STAR RPAREN
+  148          | IDENTIFIER LPAREN opt_expr_list RPAREN
+
+  149 opt_expr_list: expr_list
+  150              | ε
+
+  151 aggregate_func: COUNT
+  152               | SUM
+  153               | AVG
+  154               | MIN
+  155               | MAX
+
+  156 case_expr: CASE when_then_list opt_else END
+
+  157 when_then_list: when_then_list when_then_clause
+  158               | when_then_clause
+
+  159 when_then_clause: WHEN expr THEN expr
+
+  160 opt_else: ELSE expr
+  161         | ε
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    SELECT <str> (258) 22
+    FROM <str> (259) 33 78
+    WHERE <str> (260) 50
+    GROUP <str> (261) 52
+    BY <str> (262) 52 56
+    HAVING <str> (263) 54
+    ORDER <str> (264) 56
+    ASC <str> (265) 61
+    DESC <str> (266) 62
+    LIMIT <str> (267) 64 65
+    OFFSET <str> (268) 65
+    AS <str> (269) 30 39
+    DISTINCT <str> (270) 23
+    ALL <str> (271) 20 24
+    INSERT <str> (272) 67 68 69
+    INTO <str> (273) 67 68 69
+    VALUES <str> (274) 67 68
+    UPDATE <str> (275) 74
+    SET <str> (276) 74
+    DELETE <str> (277) 78
+    CREATE <str> (278) 79 80
+    TABLE <str> (279) 79 80 103 104 105 106 107
+    ALTER <str> (280) 103 104
+    ADD <str> (281) 103
+    DROP <str> (282) 104 105 106
+    TRUNCATE <str> (283) 107
+    RENAME <str> (284)
+    TO <str> (285)
+    COLUMN <str> (286) 103 104
+    INDEX <str> (287)
+    PRIMARY <str> (288) 84 98
+    KEY <str> (289) 84 85 98
+    FOREIGN <str> (290) 85
+    REFERENCES <str> (291) 85
+    NULL_KW <str> (292) 99 129 130 145
+    UNIQUE <str> (293) 100
+    DEFAULT <str> (294) 102
+    CHECK <str> (295)
+    CONSTRAINT <str> (296)
+    AUTO_INCREMENT <str> (297) 101
+    INT_TYPE <str> (298) 86
+    VARCHAR_TYPE <str> (299) 87
+    CHAR_TYPE <str> (300) 88
+    TEXT_TYPE <str> (301) 89
+    FLOAT_TYPE <str> (302) 90
+    DOUBLE_TYPE <str> (303) 91
+    DECIMAL_TYPE <str> (304) 92
+    BOOLEAN_TYPE <str> (305) 93
+    DATE_TYPE <str> (306) 94
+    TIMESTAMP_TYPE <str> (307) 95
+    JOIN <str> (308) 41 42 43 44 45 46 47 48 49
+    INNER <str> (309) 42
+    LEFT <str> (310) 43 44
+    RIGHT <str> (311) 45 46
+    FULL <str> (312) 47 48
+    OUTER <str> (313) 44 46 48
+    CROSS <str> (314) 49
+    ON <str> (315) 40
+    USING <str> (316)
+    UNION <str> (317) 17
+    INTERSECT <str> (318) 19
+    EXCEPT <str> (319) 18
+    AND <str> (320) 117 128
+    OR <str> (321) 116
+    NOT_KW <str> (322) 80 99 118 130
+    LIKE <str> (323) 125
+    IN <str> (324) 126 127
+    BETWEEN <str> (325) 128
+    IS <str> (326) 129 130
+    EXISTS <str> (327) 80 106
+    CASE <str> (328) 156
+    WHEN <str> (329) 159
+    THEN <str> (330) 159
+    ELSE <str> (331) 160
+    END <str> (332) 156
+    IF_KW <str> (333) 80 106
+    BEGIN_KW <str> (334) 108
+    TRANSACTION <str> (335) 112
+    COMMIT <str> (336) 109
+    ROLLBACK <str> (337) 110
+    SAVEPOINT <str> (338) 111
+    COUNT <str> (339) 151
+    SUM <str> (340) 152
+    AVG <str> (341) 153
+    MIN <str> (342) 154
+    MAX <str> (343) 155
+    IDENTIFIER <str> (344) 30 31 38 39 67 68 69 74 77 78 79 80 83 84 85 103 104 105 106 107 111 140 141 148
+    STRING_LITERAL <str> (345) 142
+    INT_LITERAL <str> (346) 64 65 87 88 92 143
+    FLOAT_LITERAL <str> (347) 144
+    EQ <str> (348) 77 119
+    NE <str> (349) 120
+    LT <str> (350) 121
+    GT <str> (351) 122
+    LE <str> (352) 123
+    GE <str> (353) 124
+    PLUS <str> (354) 131
+    MINUS <str> (355) 132 135
+    STAR <str> (356) 28 133 147
+    SLASH <str> (357) 134
+    MOD <str> (358)
+    CONCAT <str> (359)
+    COMMA <str> (360) 26 36 58 71 75 81 92 114
+    SEMICOLON <str> (361) 3 5
+    LPAREN <str> (362) 39 68 73 79 80 84 85 87 88 92 126 127 136 137 146 147 148
+    RPAREN <str> (363) 39 68 73 79 80 84 85 87 88 92 126 127 136 137 146 147 148
+    DOT <str> (364) 141
+    UNARY (365)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (111)
+        on left: 0
+    query_script <node> (112)
+        on left: 1 2
+        on right: 0
+    opt_semicolon (113)
+        on left: 3 4
+        on right: 1
+    statement_list <node> (114)
+        on left: 5 6
+        on right: 1 5
+    statement <node> (115)
+        on left: 7 8 9 10 11 12 13 14 15
+        on right: 5 6
+    select_stmt <node> (116)
+        on left: 16 17 18 19
+        on right: 7 17 18 19 39 69 127 137
+    opt_all (117)
+        on left: 20 21
+        on right: 17
+    select_expr <node> (118)
+        on left: 22
+        on right: 16 17 18 19
+    opt_distinct (119)
+        on left: 23 24 25
+        on right: 22 146
+    target_list <node> (120)
+        on left: 26 27
+        on right: 22 26
+    target_item <node> (121)
+        on left: 28 29
+        on right: 26 27
+    opt_alias (122)
+        on left: 30 31 32
+        on right: 29 38
+    opt_from <node> (123)
+        on left: 33 34
+        on right: 22
+    from_clause <node> (124)
+        on left: 35
+        on right: 33
+    table_ref_list <node> (125)
+        on left: 36 37
+        on right: 35 36
+    table_ref <node> (126)
+        on left: 38 39 40
+        on right: 36 37 40
+    join_type <node> (127)
+        on left: 41 42 43 44 45 46 47 48 49
+        on right: 40
+    opt_where <node> (128)
+        on left: 50 51
+        on right: 22 74 78
+    opt_group_by <node> (129)
+        on left: 52 53
+        on right: 22
+    opt_having <node> (130)
+        on left: 54 55
+        on right: 22
+    opt_order_by <node> (131)
+        on left: 56 57
+        on right: 22
+    order_item_list <node> (132)
+        on left: 58 59
+        on right: 56 58
+    order_item <node> (133)
+        on left: 60
+        on right: 58 59
+    opt_asc_desc <node> (134)
+        on left: 61 62 63
+        on right: 60
+    opt_limit <node> (135)
+        on left: 64 65 66
+        on right: 22
+    insert_stmt <node> (136)
+        on left: 67 68 69
+        on right: 8
+    insert_values_list <node> (137)
+        on left: 70
+        on right: 67 68
+    tuple_list <node> (138)
+        on left: 71 72
+        on right: 70 71
+    tuple <node> (139)
+        on left: 73
+        on right: 71 72
+    update_stmt <node> (140)
+        on left: 74
+        on right: 9
+    assignment_list <node> (141)
+        on left: 75 76
+        on right: 74 75
+    assignment <node> (142)
+        on left: 77
+        on right: 75 76
+    delete_stmt <node> (143)
+        on left: 78
+        on right: 10
+    create_table_stmt <node> (144)
+        on left: 79 80
+        on right: 11
+    column_def_list <node> (145)
+        on left: 81 82
+        on right: 79 80 81
+    column_def <node> (146)
+        on left: 83 84 85
+        on right: 81 82 103
+    data_type <node> (147)
+        on left: 86 87 88 89 90 91 92 93 94 95
+        on right: 83
+    opt_column_constraints <node> (148)
+        on left: 96 97
+        on right: 83 96
+    column_constraint <node> (149)
+        on left: 98 99 100 101 102
+        on right: 96
+    alter_table_stmt <node> (150)
+        on left: 103 104
+        on right: 12
+    drop_table_stmt <node> (151)
+        on left: 105 106
+        on right: 13
+    truncate_table_stmt <node> (152)
+        on left: 107
+        on right: 14
+    transaction_stmt <node> (153)
+        on left: 108 109 110 111
+        on right: 15
+    opt_transaction (154)
+        on left: 112 113
+        on right: 108
+    expr_list <node> (155)
+        on left: 114 115
+        on right: 52 68 73 114 126 149
+    expr <node> (156)
+        on left: 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145
+        on right: 29 40 50 54 60 77 102 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 146 159 160
+    func_call <node> (157)
+        on left: 146 147 148
+        on right: 138
+    opt_expr_list <node> (158)
+        on left: 149 150
+        on right: 148
+    aggregate_func <node> (159)
+        on left: 151 152 153 154 155
+        on right: 146 147
+    case_expr <node> (160)
+        on left: 156
+        on right: 139
+    when_then_list <node> (161)
+        on left: 157 158
+        on right: 156 157
+    when_then_clause <node> (162)
+        on left: 159
+        on right: 157 158
+    opt_else <node> (163)
+        on left: 160 161
+        on right: 156
+
+
+State 0
+
+    0 $accept: • query_script $end
+
+    SELECT     shift, and go to state 1
+    INSERT     shift, and go to state 2
+    UPDATE     shift, and go to state 3
+    DELETE     shift, and go to state 4
+    CREATE     shift, and go to state 5
+    ALTER      shift, and go to state 6
+    DROP       shift, and go to state 7
+    TRUNCATE   shift, and go to state 8
+    BEGIN_KW   shift, and go to state 9
+    COMMIT     shift, and go to state 10
+    ROLLBACK   shift, and go to state 11
+    SAVEPOINT  shift, and go to state 12
+
+    $default  reduce using rule 2 (query_script)
+
+    query_script         go to state 13
+    statement_list       go to state 14
+    statement            go to state 15
+    select_stmt          go to state 16
+    select_expr          go to state 17
+    insert_stmt          go to state 18
+    update_stmt          go to state 19
+    delete_stmt          go to state 20
+    create_table_stmt    go to state 21
+    alter_table_stmt     go to state 22
+    drop_table_stmt      go to state 23
+    truncate_table_stmt  go to state 24
+    transaction_stmt     go to state 25
+
+
+State 1
+
+   22 select_expr: SELECT • opt_distinct target_list opt_from opt_where opt_group_by opt_having opt_order_by opt_limit
+
+    DISTINCT  shift, and go to state 26
+    ALL       shift, and go to state 27
+
+    $default  reduce using rule 25 (opt_distinct)
+
+    opt_distinct  go to state 28
+
+
+State 2
+
+   67 insert_stmt: INSERT • INTO IDENTIFIER VALUES insert_values_list
+   68            | INSERT • INTO IDENTIFIER LPAREN expr_list RPAREN VALUES insert_values_list
+   69            | INSERT • INTO IDENTIFIER select_stmt
+
+    INTO  shift, and go to state 29
+
+
+State 3
+
+   74 update_stmt: UPDATE • IDENTIFIER SET assignment_list opt_where
+
+    IDENTIFIER  shift, and go to state 30
+
+
+State 4
+
+   78 delete_stmt: DELETE • FROM IDENTIFIER opt_where
+
+    FROM  shift, and go to state 31
+
+
+State 5
+
+   79 create_table_stmt: CREATE • TABLE IDENTIFIER LPAREN column_def_list RPAREN
+   80                  | CREATE • TABLE IF_KW NOT_KW EXISTS IDENTIFIER LPAREN column_def_list RPAREN
+
+    TABLE  shift, and go to state 32
+
+
+State 6
+
+  103 alter_table_stmt: ALTER • TABLE IDENTIFIER ADD COLUMN column_def
+  104                 | ALTER • TABLE IDENTIFIER DROP COLUMN IDENTIFIER
+
+    TABLE  shift, and go to state 33
+
+
+State 7
+
+  105 drop_table_stmt: DROP • TABLE IDENTIFIER
+  106                | DROP • TABLE IF_KW EXISTS IDENTIFIER
+
+    TABLE  shift, and go to state 34
+
+
+State 8
+
+  107 truncate_table_stmt: TRUNCATE • TABLE IDENTIFIER
+
+    TABLE  shift, and go to state 35
+
+
+State 9
+
+  108 transaction_stmt: BEGIN_KW • opt_transaction
+
+    TRANSACTION  shift, and go to state 36
+
+    $default  reduce using rule 113 (opt_transaction)
+
+    opt_transaction  go to state 37
+
+
+State 10
+
+  109 transaction_stmt: COMMIT •
+
+    $default  reduce using rule 109 (transaction_stmt)
+
+
+State 11
+
+  110 transaction_stmt: ROLLBACK •
+
+    $default  reduce using rule 110 (transaction_stmt)
+
+
+State 12
+
+  111 transaction_stmt: SAVEPOINT • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 38
+
+
+State 13
+
+    0 $accept: query_script • $end
+
+    $end  shift, and go to state 39
+
+
+State 14
+
+    1 query_script: statement_list • opt_semicolon
+    5 statement_list: statement_list • SEMICOLON statement
+
+    SEMICOLON  shift, and go to state 40
+
+    $default  reduce using rule 4 (opt_semicolon)
+
+    opt_semicolon  go to state 41
+
+
+State 15
+
+    6 statement_list: statement •
+
+    $default  reduce using rule 6 (statement_list)
+
+
+State 16
+
+    7 statement: select_stmt •
+   17 select_stmt: select_stmt • UNION opt_all select_expr
+   18            | select_stmt • EXCEPT select_expr
+   19            | select_stmt • INTERSECT select_expr
+
+    UNION      shift, and go to state 42
+    INTERSECT  shift, and go to state 43
+    EXCEPT     shift, and go to state 44
+
+    $default  reduce using rule 7 (statement)
+
+
+State 17
+
+   16 select_stmt: select_expr •
+
+    $default  reduce using rule 16 (select_stmt)
+
+
+State 18
+
+    8 statement: insert_stmt •
+
+    $default  reduce using rule 8 (statement)
+
+
+State 19
+
+    9 statement: update_stmt •
+
+    $default  reduce using rule 9 (statement)
+
+
+State 20
+
+   10 statement: delete_stmt •
+
+    $default  reduce using rule 10 (statement)
+
+
+State 21
+
+   11 statement: create_table_stmt •
+
+    $default  reduce using rule 11 (statement)
+
+
+State 22
+
+   12 statement: alter_table_stmt •
+
+    $default  reduce using rule 12 (statement)
+
+
+State 23
+
+   13 statement: drop_table_stmt •
+
+    $default  reduce using rule 13 (statement)
+
+
+State 24
+
+   14 statement: truncate_table_stmt •
+
+    $default  reduce using rule 14 (statement)
+
+
+State 25
+
+   15 statement: transaction_stmt •
+
+    $default  reduce using rule 15 (statement)
+
+
+State 26
+
+   23 opt_distinct: DISTINCT •
+
+    $default  reduce using rule 23 (opt_distinct)
+
+
+State 27
+
+   24 opt_distinct: ALL •
+
+    $default  reduce using rule 24 (opt_distinct)
+
+
+State 28
+
+   22 select_expr: SELECT opt_distinct • target_list opt_from opt_where opt_group_by opt_having opt_order_by opt_limit
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    STAR            shift, and go to state 58
+    LPAREN          shift, and go to state 59
+
+    target_list     go to state 60
+    target_item     go to state 61
+    expr            go to state 62
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 29
+
+   67 insert_stmt: INSERT INTO • IDENTIFIER VALUES insert_values_list
+   68            | INSERT INTO • IDENTIFIER LPAREN expr_list RPAREN VALUES insert_values_list
+   69            | INSERT INTO • IDENTIFIER select_stmt
+
+    IDENTIFIER  shift, and go to state 66
+
+
+State 30
+
+   74 update_stmt: UPDATE IDENTIFIER • SET assignment_list opt_where
+
+    SET  shift, and go to state 67
+
+
+State 31
+
+   78 delete_stmt: DELETE FROM • IDENTIFIER opt_where
+
+    IDENTIFIER  shift, and go to state 68
+
+
+State 32
+
+   79 create_table_stmt: CREATE TABLE • IDENTIFIER LPAREN column_def_list RPAREN
+   80                  | CREATE TABLE • IF_KW NOT_KW EXISTS IDENTIFIER LPAREN column_def_list RPAREN
+
+    IF_KW       shift, and go to state 69
+    IDENTIFIER  shift, and go to state 70
+
+
+State 33
+
+  103 alter_table_stmt: ALTER TABLE • IDENTIFIER ADD COLUMN column_def
+  104                 | ALTER TABLE • IDENTIFIER DROP COLUMN IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 71
+
+
+State 34
+
+  105 drop_table_stmt: DROP TABLE • IDENTIFIER
+  106                | DROP TABLE • IF_KW EXISTS IDENTIFIER
+
+    IF_KW       shift, and go to state 72
+    IDENTIFIER  shift, and go to state 73
+
+
+State 35
+
+  107 truncate_table_stmt: TRUNCATE TABLE • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 74
+
+
+State 36
+
+  112 opt_transaction: TRANSACTION •
+
+    $default  reduce using rule 112 (opt_transaction)
+
+
+State 37
+
+  108 transaction_stmt: BEGIN_KW opt_transaction •
+
+    $default  reduce using rule 108 (transaction_stmt)
+
+
+State 38
+
+  111 transaction_stmt: SAVEPOINT IDENTIFIER •
+
+    $default  reduce using rule 111 (transaction_stmt)
+
+
+State 39
+
+    0 $accept: query_script $end •
+
+    $default  accept
+
+
+State 40
+
+    3 opt_semicolon: SEMICOLON •
+    5 statement_list: statement_list SEMICOLON • statement
+
+    SELECT     shift, and go to state 1
+    INSERT     shift, and go to state 2
+    UPDATE     shift, and go to state 3
+    DELETE     shift, and go to state 4
+    CREATE     shift, and go to state 5
+    ALTER      shift, and go to state 6
+    DROP       shift, and go to state 7
+    TRUNCATE   shift, and go to state 8
+    BEGIN_KW   shift, and go to state 9
+    COMMIT     shift, and go to state 10
+    ROLLBACK   shift, and go to state 11
+    SAVEPOINT  shift, and go to state 12
+
+    $default  reduce using rule 3 (opt_semicolon)
+
+    statement            go to state 75
+    select_stmt          go to state 16
+    select_expr          go to state 17
+    insert_stmt          go to state 18
+    update_stmt          go to state 19
+    delete_stmt          go to state 20
+    create_table_stmt    go to state 21
+    alter_table_stmt     go to state 22
+    drop_table_stmt      go to state 23
+    truncate_table_stmt  go to state 24
+    transaction_stmt     go to state 25
+
+
+State 41
+
+    1 query_script: statement_list opt_semicolon •
+
+    $default  reduce using rule 1 (query_script)
+
+
+State 42
+
+   17 select_stmt: select_stmt UNION • opt_all select_expr
+
+    ALL  shift, and go to state 76
+
+    $default  reduce using rule 21 (opt_all)
+
+    opt_all  go to state 77
+
+
+State 43
+
+   19 select_stmt: select_stmt INTERSECT • select_expr
+
+    SELECT  shift, and go to state 1
+
+    select_expr  go to state 78
+
+
+State 44
+
+   18 select_stmt: select_stmt EXCEPT • select_expr
+
+    SELECT  shift, and go to state 1
+
+    select_expr  go to state 79
+
+
+State 45
+
+  145 expr: NULL_KW •
+
+    $default  reduce using rule 145 (expr)
+
+
+State 46
+
+  118 expr: NOT_KW • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 80
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 47
+
+  156 case_expr: CASE • when_then_list opt_else END
+
+    WHEN  shift, and go to state 81
+
+    when_then_list    go to state 82
+    when_then_clause  go to state 83
+
+
+State 48
+
+  151 aggregate_func: COUNT •
+
+    $default  reduce using rule 151 (aggregate_func)
+
+
+State 49
+
+  152 aggregate_func: SUM •
+
+    $default  reduce using rule 152 (aggregate_func)
+
+
+State 50
+
+  153 aggregate_func: AVG •
+
+    $default  reduce using rule 153 (aggregate_func)
+
+
+State 51
+
+  154 aggregate_func: MIN •
+
+    $default  reduce using rule 154 (aggregate_func)
+
+
+State 52
+
+  155 aggregate_func: MAX •
+
+    $default  reduce using rule 155 (aggregate_func)
+
+
+State 53
+
+  140 expr: IDENTIFIER •
+  141     | IDENTIFIER • DOT IDENTIFIER
+  148 func_call: IDENTIFIER • LPAREN opt_expr_list RPAREN
+
+    LPAREN  shift, and go to state 84
+    DOT     shift, and go to state 85
+
+    $default  reduce using rule 140 (expr)
+
+
+State 54
+
+  142 expr: STRING_LITERAL •
+
+    $default  reduce using rule 142 (expr)
+
+
+State 55
+
+  143 expr: INT_LITERAL •
+
+    $default  reduce using rule 143 (expr)
+
+
+State 56
+
+  144 expr: FLOAT_LITERAL •
+
+    $default  reduce using rule 144 (expr)
+
+
+State 57
+
+  135 expr: MINUS • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 86
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 58
+
+   28 target_item: STAR •
+
+    $default  reduce using rule 28 (target_item)
+
+
+State 59
+
+  136 expr: LPAREN • expr RPAREN
+  137     | LPAREN • select_stmt RPAREN
+
+    SELECT          shift, and go to state 1
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    select_stmt     go to state 87
+    select_expr     go to state 17
+    expr            go to state 88
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 60
+
+   22 select_expr: SELECT opt_distinct target_list • opt_from opt_where opt_group_by opt_having opt_order_by opt_limit
+   26 target_list: target_list • COMMA target_item
+
+    FROM   shift, and go to state 89
+    COMMA  shift, and go to state 90
+
+    $default  reduce using rule 34 (opt_from)
+
+    opt_from  go to state 91
+
+
+State 61
+
+   27 target_list: target_item •
+
+    $default  reduce using rule 27 (target_list)
+
+
+State 62
+
+   29 target_item: expr • opt_alias
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AS          shift, and go to state 92
+    AND         shift, and go to state 93
+    OR          shift, and go to state 94
+    LIKE        shift, and go to state 95
+    IN          shift, and go to state 96
+    BETWEEN     shift, and go to state 97
+    IS          shift, and go to state 98
+    IDENTIFIER  shift, and go to state 99
+    EQ          shift, and go to state 100
+    NE          shift, and go to state 101
+    LT          shift, and go to state 102
+    GT          shift, and go to state 103
+    LE          shift, and go to state 104
+    GE          shift, and go to state 105
+    PLUS        shift, and go to state 106
+    MINUS       shift, and go to state 107
+    STAR        shift, and go to state 108
+    SLASH       shift, and go to state 109
+
+    $default  reduce using rule 32 (opt_alias)
+
+    opt_alias  go to state 110
+
+
+State 63
+
+  138 expr: func_call •
+
+    $default  reduce using rule 138 (expr)
+
+
+State 64
+
+  146 func_call: aggregate_func • LPAREN opt_distinct expr RPAREN
+  147          | aggregate_func • LPAREN STAR RPAREN
+
+    LPAREN  shift, and go to state 111
+
+
+State 65
+
+  139 expr: case_expr •
+
+    $default  reduce using rule 139 (expr)
+
+
+State 66
+
+   67 insert_stmt: INSERT INTO IDENTIFIER • VALUES insert_values_list
+   68            | INSERT INTO IDENTIFIER • LPAREN expr_list RPAREN VALUES insert_values_list
+   69            | INSERT INTO IDENTIFIER • select_stmt
+
+    SELECT  shift, and go to state 1
+    VALUES  shift, and go to state 112
+    LPAREN  shift, and go to state 113
+
+    select_stmt  go to state 114
+    select_expr  go to state 17
+
+
+State 67
+
+   74 update_stmt: UPDATE IDENTIFIER SET • assignment_list opt_where
+
+    IDENTIFIER  shift, and go to state 115
+
+    assignment_list  go to state 116
+    assignment       go to state 117
+
+
+State 68
+
+   78 delete_stmt: DELETE FROM IDENTIFIER • opt_where
+
+    WHERE  shift, and go to state 118
+
+    $default  reduce using rule 51 (opt_where)
+
+    opt_where  go to state 119
+
+
+State 69
+
+   80 create_table_stmt: CREATE TABLE IF_KW • NOT_KW EXISTS IDENTIFIER LPAREN column_def_list RPAREN
+
+    NOT_KW  shift, and go to state 120
+
+
+State 70
+
+   79 create_table_stmt: CREATE TABLE IDENTIFIER • LPAREN column_def_list RPAREN
+
+    LPAREN  shift, and go to state 121
+
+
+State 71
+
+  103 alter_table_stmt: ALTER TABLE IDENTIFIER • ADD COLUMN column_def
+  104                 | ALTER TABLE IDENTIFIER • DROP COLUMN IDENTIFIER
+
+    ADD   shift, and go to state 122
+    DROP  shift, and go to state 123
+
+
+State 72
+
+  106 drop_table_stmt: DROP TABLE IF_KW • EXISTS IDENTIFIER
+
+    EXISTS  shift, and go to state 124
+
+
+State 73
+
+  105 drop_table_stmt: DROP TABLE IDENTIFIER •
+
+    $default  reduce using rule 105 (drop_table_stmt)
+
+
+State 74
+
+  107 truncate_table_stmt: TRUNCATE TABLE IDENTIFIER •
+
+    $default  reduce using rule 107 (truncate_table_stmt)
+
+
+State 75
+
+    5 statement_list: statement_list SEMICOLON statement •
+
+    $default  reduce using rule 5 (statement_list)
+
+
+State 76
+
+   20 opt_all: ALL •
+
+    $default  reduce using rule 20 (opt_all)
+
+
+State 77
+
+   17 select_stmt: select_stmt UNION opt_all • select_expr
+
+    SELECT  shift, and go to state 1
+
+    select_expr  go to state 125
+
+
+State 78
+
+   19 select_stmt: select_stmt INTERSECT select_expr •
+
+    $default  reduce using rule 19 (select_stmt)
+
+
+State 79
+
+   18 select_stmt: select_stmt EXCEPT select_expr •
+
+    $default  reduce using rule 18 (select_stmt)
+
+
+State 80
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  118     | NOT_KW expr •
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 118 (expr)
+
+
+State 81
+
+  159 when_then_clause: WHEN • expr THEN expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 126
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 82
+
+  156 case_expr: CASE when_then_list • opt_else END
+  157 when_then_list: when_then_list • when_then_clause
+
+    WHEN  shift, and go to state 81
+    ELSE  shift, and go to state 127
+
+    $default  reduce using rule 161 (opt_else)
+
+    when_then_clause  go to state 128
+    opt_else          go to state 129
+
+
+State 83
+
+  158 when_then_list: when_then_clause •
+
+    $default  reduce using rule 158 (when_then_list)
+
+
+State 84
+
+  148 func_call: IDENTIFIER LPAREN • opt_expr_list RPAREN
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    $default  reduce using rule 150 (opt_expr_list)
+
+    expr_list       go to state 130
+    expr            go to state 131
+    func_call       go to state 63
+    opt_expr_list   go to state 132
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 85
+
+  141 expr: IDENTIFIER DOT • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 133
+
+
+State 86
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  135     | MINUS expr •
+
+    $default  reduce using rule 135 (expr)
+
+
+State 87
+
+   17 select_stmt: select_stmt • UNION opt_all select_expr
+   18            | select_stmt • EXCEPT select_expr
+   19            | select_stmt • INTERSECT select_expr
+  137 expr: LPAREN select_stmt • RPAREN
+
+    UNION      shift, and go to state 42
+    INTERSECT  shift, and go to state 43
+    EXCEPT     shift, and go to state 44
+    RPAREN     shift, and go to state 134
+
+
+State 88
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  136     | LPAREN expr • RPAREN
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+    RPAREN   shift, and go to state 135
+
+
+State 89
+
+   33 opt_from: FROM • from_clause
+
+    IDENTIFIER  shift, and go to state 136
+    LPAREN      shift, and go to state 137
+
+    from_clause     go to state 138
+    table_ref_list  go to state 139
+    table_ref       go to state 140
+
+
+State 90
+
+   26 target_list: target_list COMMA • target_item
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    STAR            shift, and go to state 58
+    LPAREN          shift, and go to state 59
+
+    target_item     go to state 141
+    expr            go to state 62
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 91
+
+   22 select_expr: SELECT opt_distinct target_list opt_from • opt_where opt_group_by opt_having opt_order_by opt_limit
+
+    WHERE  shift, and go to state 118
+
+    $default  reduce using rule 51 (opt_where)
+
+    opt_where  go to state 142
+
+
+State 92
+
+   30 opt_alias: AS • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 143
+
+
+State 93
+
+  117 expr: expr AND • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 144
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 94
+
+  116 expr: expr OR • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 145
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 95
+
+  125 expr: expr LIKE • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 146
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 96
+
+  126 expr: expr IN • LPAREN expr_list RPAREN
+  127     | expr IN • LPAREN select_stmt RPAREN
+
+    LPAREN  shift, and go to state 147
+
+
+State 97
+
+  128 expr: expr BETWEEN • expr AND expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 148
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 98
+
+  129 expr: expr IS • NULL_KW
+  130     | expr IS • NOT_KW NULL_KW
+
+    NULL_KW  shift, and go to state 149
+    NOT_KW   shift, and go to state 150
+
+
+State 99
+
+   31 opt_alias: IDENTIFIER •
+
+    $default  reduce using rule 31 (opt_alias)
+
+
+State 100
+
+  119 expr: expr EQ • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 151
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 101
+
+  120 expr: expr NE • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 152
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 102
+
+  121 expr: expr LT • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 153
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 103
+
+  122 expr: expr GT • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 154
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 104
+
+  123 expr: expr LE • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 155
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 105
+
+  124 expr: expr GE • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 156
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 106
+
+  131 expr: expr PLUS • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 157
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 107
+
+  132 expr: expr MINUS • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 158
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 108
+
+  133 expr: expr STAR • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 159
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 109
+
+  134 expr: expr SLASH • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 160
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 110
+
+   29 target_item: expr opt_alias •
+
+    $default  reduce using rule 29 (target_item)
+
+
+State 111
+
+  146 func_call: aggregate_func LPAREN • opt_distinct expr RPAREN
+  147          | aggregate_func LPAREN • STAR RPAREN
+
+    DISTINCT  shift, and go to state 26
+    ALL       shift, and go to state 27
+    STAR      shift, and go to state 161
+
+    $default  reduce using rule 25 (opt_distinct)
+
+    opt_distinct  go to state 162
+
+
+State 112
+
+   67 insert_stmt: INSERT INTO IDENTIFIER VALUES • insert_values_list
+
+    LPAREN  shift, and go to state 163
+
+    insert_values_list  go to state 164
+    tuple_list          go to state 165
+    tuple               go to state 166
+
+
+State 113
+
+   68 insert_stmt: INSERT INTO IDENTIFIER LPAREN • expr_list RPAREN VALUES insert_values_list
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr_list       go to state 167
+    expr            go to state 131
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 114
+
+   17 select_stmt: select_stmt • UNION opt_all select_expr
+   18            | select_stmt • EXCEPT select_expr
+   19            | select_stmt • INTERSECT select_expr
+   69 insert_stmt: INSERT INTO IDENTIFIER select_stmt •
+
+    UNION      shift, and go to state 42
+    INTERSECT  shift, and go to state 43
+    EXCEPT     shift, and go to state 44
+
+    $default  reduce using rule 69 (insert_stmt)
+
+
+State 115
+
+   77 assignment: IDENTIFIER • EQ expr
+
+    EQ  shift, and go to state 168
+
+
+State 116
+
+   74 update_stmt: UPDATE IDENTIFIER SET assignment_list • opt_where
+   75 assignment_list: assignment_list • COMMA assignment
+
+    WHERE  shift, and go to state 118
+    COMMA  shift, and go to state 169
+
+    $default  reduce using rule 51 (opt_where)
+
+    opt_where  go to state 170
+
+
+State 117
+
+   76 assignment_list: assignment •
+
+    $default  reduce using rule 76 (assignment_list)
+
+
+State 118
+
+   50 opt_where: WHERE • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 171
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 119
+
+   78 delete_stmt: DELETE FROM IDENTIFIER opt_where •
+
+    $default  reduce using rule 78 (delete_stmt)
+
+
+State 120
+
+   80 create_table_stmt: CREATE TABLE IF_KW NOT_KW • EXISTS IDENTIFIER LPAREN column_def_list RPAREN
+
+    EXISTS  shift, and go to state 172
+
+
+State 121
+
+   79 create_table_stmt: CREATE TABLE IDENTIFIER LPAREN • column_def_list RPAREN
+
+    PRIMARY     shift, and go to state 173
+    FOREIGN     shift, and go to state 174
+    IDENTIFIER  shift, and go to state 175
+
+    column_def_list  go to state 176
+    column_def       go to state 177
+
+
+State 122
+
+  103 alter_table_stmt: ALTER TABLE IDENTIFIER ADD • COLUMN column_def
+
+    COLUMN  shift, and go to state 178
+
+
+State 123
+
+  104 alter_table_stmt: ALTER TABLE IDENTIFIER DROP • COLUMN IDENTIFIER
+
+    COLUMN  shift, and go to state 179
+
+
+State 124
+
+  106 drop_table_stmt: DROP TABLE IF_KW EXISTS • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 180
+
+
+State 125
+
+   17 select_stmt: select_stmt UNION opt_all select_expr •
+
+    $default  reduce using rule 17 (select_stmt)
+
+
+State 126
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  159 when_then_clause: WHEN expr • THEN expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    THEN     shift, and go to state 181
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+
+State 127
+
+  160 opt_else: ELSE • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 182
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 128
+
+  157 when_then_list: when_then_list when_then_clause •
+
+    $default  reduce using rule 157 (when_then_list)
+
+
+State 129
+
+  156 case_expr: CASE when_then_list opt_else • END
+
+    END  shift, and go to state 183
+
+
+State 130
+
+  114 expr_list: expr_list • COMMA expr
+  149 opt_expr_list: expr_list •
+
+    COMMA  shift, and go to state 184
+
+    $default  reduce using rule 149 (opt_expr_list)
+
+
+State 131
+
+  115 expr_list: expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 115 (expr_list)
+
+
+State 132
+
+  148 func_call: IDENTIFIER LPAREN opt_expr_list • RPAREN
+
+    RPAREN  shift, and go to state 185
+
+
+State 133
+
+  141 expr: IDENTIFIER DOT IDENTIFIER •
+
+    $default  reduce using rule 141 (expr)
+
+
+State 134
+
+  137 expr: LPAREN select_stmt RPAREN •
+
+    $default  reduce using rule 137 (expr)
+
+
+State 135
+
+  136 expr: LPAREN expr RPAREN •
+
+    $default  reduce using rule 136 (expr)
+
+
+State 136
+
+   38 table_ref: IDENTIFIER • opt_alias
+
+    AS          shift, and go to state 92
+    IDENTIFIER  shift, and go to state 99
+
+    $default  reduce using rule 32 (opt_alias)
+
+    opt_alias  go to state 186
+
+
+State 137
+
+   39 table_ref: LPAREN • select_stmt RPAREN AS IDENTIFIER
+
+    SELECT  shift, and go to state 1
+
+    select_stmt  go to state 187
+    select_expr  go to state 17
+
+
+State 138
+
+   33 opt_from: FROM from_clause •
+
+    $default  reduce using rule 33 (opt_from)
+
+
+State 139
+
+   35 from_clause: table_ref_list •
+   36 table_ref_list: table_ref_list • COMMA table_ref
+
+    COMMA  shift, and go to state 188
+
+    $default  reduce using rule 35 (from_clause)
+
+
+State 140
+
+   37 table_ref_list: table_ref •
+   40 table_ref: table_ref • join_type table_ref ON expr
+
+    JOIN   shift, and go to state 189
+    INNER  shift, and go to state 190
+    LEFT   shift, and go to state 191
+    RIGHT  shift, and go to state 192
+    FULL   shift, and go to state 193
+    CROSS  shift, and go to state 194
+
+    $default  reduce using rule 37 (table_ref_list)
+
+    join_type  go to state 195
+
+
+State 141
+
+   26 target_list: target_list COMMA target_item •
+
+    $default  reduce using rule 26 (target_list)
+
+
+State 142
+
+   22 select_expr: SELECT opt_distinct target_list opt_from opt_where • opt_group_by opt_having opt_order_by opt_limit
+
+    GROUP  shift, and go to state 196
+
+    $default  reduce using rule 53 (opt_group_by)
+
+    opt_group_by  go to state 197
+
+
+State 143
+
+   30 opt_alias: AS IDENTIFIER •
+
+    $default  reduce using rule 30 (opt_alias)
+
+
+State 144
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  117     | expr AND expr •
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 117 (expr)
+
+
+State 145
+
+  116 expr: expr • OR expr
+  116     | expr OR expr •
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 116 (expr)
+
+
+State 146
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  125     | expr LIKE expr •
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 125 (expr)
+
+
+State 147
+
+  126 expr: expr IN LPAREN • expr_list RPAREN
+  127     | expr IN LPAREN • select_stmt RPAREN
+
+    SELECT          shift, and go to state 1
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    select_stmt     go to state 198
+    select_expr     go to state 17
+    expr_list       go to state 199
+    expr            go to state 131
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 148
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  128     | expr BETWEEN expr • AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 200
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+
+State 149
+
+  129 expr: expr IS NULL_KW •
+
+    $default  reduce using rule 129 (expr)
+
+
+State 150
+
+  130 expr: expr IS NOT_KW • NULL_KW
+
+    NULL_KW  shift, and go to state 201
+
+
+State 151
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  119     | expr EQ expr •
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 119 (expr)
+
+
+State 152
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  120     | expr NE expr •
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 120 (expr)
+
+
+State 153
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  121     | expr LT expr •
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 121 (expr)
+
+
+State 154
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  122     | expr GT expr •
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 122 (expr)
+
+
+State 155
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  123     | expr LE expr •
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 123 (expr)
+
+
+State 156
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  124     | expr GE expr •
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    PLUS   shift, and go to state 106
+    MINUS  shift, and go to state 107
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 124 (expr)
+
+
+State 157
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  131     | expr PLUS expr •
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 131 (expr)
+
+
+State 158
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  132     | expr MINUS expr •
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    STAR   shift, and go to state 108
+    SLASH  shift, and go to state 109
+
+    $default  reduce using rule 132 (expr)
+
+
+State 159
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  133     | expr STAR expr •
+  134     | expr • SLASH expr
+
+    $default  reduce using rule 133 (expr)
+
+
+State 160
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  134     | expr SLASH expr •
+
+    $default  reduce using rule 134 (expr)
+
+
+State 161
+
+  147 func_call: aggregate_func LPAREN STAR • RPAREN
+
+    RPAREN  shift, and go to state 202
+
+
+State 162
+
+  146 func_call: aggregate_func LPAREN opt_distinct • expr RPAREN
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 203
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 163
+
+   73 tuple: LPAREN • expr_list RPAREN
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr_list       go to state 204
+    expr            go to state 131
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 164
+
+   67 insert_stmt: INSERT INTO IDENTIFIER VALUES insert_values_list •
+
+    $default  reduce using rule 67 (insert_stmt)
+
+
+State 165
+
+   70 insert_values_list: tuple_list •
+   71 tuple_list: tuple_list • COMMA tuple
+
+    COMMA  shift, and go to state 205
+
+    $default  reduce using rule 70 (insert_values_list)
+
+
+State 166
+
+   72 tuple_list: tuple •
+
+    $default  reduce using rule 72 (tuple_list)
+
+
+State 167
+
+   68 insert_stmt: INSERT INTO IDENTIFIER LPAREN expr_list • RPAREN VALUES insert_values_list
+  114 expr_list: expr_list • COMMA expr
+
+    COMMA   shift, and go to state 184
+    RPAREN  shift, and go to state 206
+
+
+State 168
+
+   77 assignment: IDENTIFIER EQ • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 207
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 169
+
+   75 assignment_list: assignment_list COMMA • assignment
+
+    IDENTIFIER  shift, and go to state 115
+
+    assignment  go to state 208
+
+
+State 170
+
+   74 update_stmt: UPDATE IDENTIFIER SET assignment_list opt_where •
+
+    $default  reduce using rule 74 (update_stmt)
+
+
+State 171
+
+   50 opt_where: WHERE expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 50 (opt_where)
+
+
+State 172
+
+   80 create_table_stmt: CREATE TABLE IF_KW NOT_KW EXISTS • IDENTIFIER LPAREN column_def_list RPAREN
+
+    IDENTIFIER  shift, and go to state 209
+
+
+State 173
+
+   84 column_def: PRIMARY • KEY LPAREN IDENTIFIER RPAREN
+
+    KEY  shift, and go to state 210
+
+
+State 174
+
+   85 column_def: FOREIGN • KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+    KEY  shift, and go to state 211
+
+
+State 175
+
+   83 column_def: IDENTIFIER • data_type opt_column_constraints
+
+    INT_TYPE        shift, and go to state 212
+    VARCHAR_TYPE    shift, and go to state 213
+    CHAR_TYPE       shift, and go to state 214
+    TEXT_TYPE       shift, and go to state 215
+    FLOAT_TYPE      shift, and go to state 216
+    DOUBLE_TYPE     shift, and go to state 217
+    DECIMAL_TYPE    shift, and go to state 218
+    BOOLEAN_TYPE    shift, and go to state 219
+    DATE_TYPE       shift, and go to state 220
+    TIMESTAMP_TYPE  shift, and go to state 221
+
+    data_type  go to state 222
+
+
+State 176
+
+   79 create_table_stmt: CREATE TABLE IDENTIFIER LPAREN column_def_list • RPAREN
+   81 column_def_list: column_def_list • COMMA column_def
+
+    COMMA   shift, and go to state 223
+    RPAREN  shift, and go to state 224
+
+
+State 177
+
+   82 column_def_list: column_def •
+
+    $default  reduce using rule 82 (column_def_list)
+
+
+State 178
+
+  103 alter_table_stmt: ALTER TABLE IDENTIFIER ADD COLUMN • column_def
+
+    PRIMARY     shift, and go to state 173
+    FOREIGN     shift, and go to state 174
+    IDENTIFIER  shift, and go to state 175
+
+    column_def  go to state 225
+
+
+State 179
+
+  104 alter_table_stmt: ALTER TABLE IDENTIFIER DROP COLUMN • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 226
+
+
+State 180
+
+  106 drop_table_stmt: DROP TABLE IF_KW EXISTS IDENTIFIER •
+
+    $default  reduce using rule 106 (drop_table_stmt)
+
+
+State 181
+
+  159 when_then_clause: WHEN expr THEN • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 227
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 182
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  160 opt_else: ELSE expr •
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 160 (opt_else)
+
+
+State 183
+
+  156 case_expr: CASE when_then_list opt_else END •
+
+    $default  reduce using rule 156 (case_expr)
+
+
+State 184
+
+  114 expr_list: expr_list COMMA • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 228
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 185
+
+  148 func_call: IDENTIFIER LPAREN opt_expr_list RPAREN •
+
+    $default  reduce using rule 148 (func_call)
+
+
+State 186
+
+   38 table_ref: IDENTIFIER opt_alias •
+
+    $default  reduce using rule 38 (table_ref)
+
+
+State 187
+
+   17 select_stmt: select_stmt • UNION opt_all select_expr
+   18            | select_stmt • EXCEPT select_expr
+   19            | select_stmt • INTERSECT select_expr
+   39 table_ref: LPAREN select_stmt • RPAREN AS IDENTIFIER
+
+    UNION      shift, and go to state 42
+    INTERSECT  shift, and go to state 43
+    EXCEPT     shift, and go to state 44
+    RPAREN     shift, and go to state 229
+
+
+State 188
+
+   36 table_ref_list: table_ref_list COMMA • table_ref
+
+    IDENTIFIER  shift, and go to state 136
+    LPAREN      shift, and go to state 137
+
+    table_ref  go to state 230
+
+
+State 189
+
+   41 join_type: JOIN •
+
+    $default  reduce using rule 41 (join_type)
+
+
+State 190
+
+   42 join_type: INNER • JOIN
+
+    JOIN  shift, and go to state 231
+
+
+State 191
+
+   43 join_type: LEFT • JOIN
+   44          | LEFT • OUTER JOIN
+
+    JOIN   shift, and go to state 232
+    OUTER  shift, and go to state 233
+
+
+State 192
+
+   45 join_type: RIGHT • JOIN
+   46          | RIGHT • OUTER JOIN
+
+    JOIN   shift, and go to state 234
+    OUTER  shift, and go to state 235
+
+
+State 193
+
+   47 join_type: FULL • JOIN
+   48          | FULL • OUTER JOIN
+
+    JOIN   shift, and go to state 236
+    OUTER  shift, and go to state 237
+
+
+State 194
+
+   49 join_type: CROSS • JOIN
+
+    JOIN  shift, and go to state 238
+
+
+State 195
+
+   40 table_ref: table_ref join_type • table_ref ON expr
+
+    IDENTIFIER  shift, and go to state 136
+    LPAREN      shift, and go to state 137
+
+    table_ref  go to state 239
+
+
+State 196
+
+   52 opt_group_by: GROUP • BY expr_list
+
+    BY  shift, and go to state 240
+
+
+State 197
+
+   22 select_expr: SELECT opt_distinct target_list opt_from opt_where opt_group_by • opt_having opt_order_by opt_limit
+
+    HAVING  shift, and go to state 241
+
+    $default  reduce using rule 55 (opt_having)
+
+    opt_having  go to state 242
+
+
+State 198
+
+   17 select_stmt: select_stmt • UNION opt_all select_expr
+   18            | select_stmt • EXCEPT select_expr
+   19            | select_stmt • INTERSECT select_expr
+  127 expr: expr IN LPAREN select_stmt • RPAREN
+
+    UNION      shift, and go to state 42
+    INTERSECT  shift, and go to state 43
+    EXCEPT     shift, and go to state 44
+    RPAREN     shift, and go to state 243
+
+
+State 199
+
+  114 expr_list: expr_list • COMMA expr
+  126 expr: expr IN LPAREN expr_list • RPAREN
+
+    COMMA   shift, and go to state 184
+    RPAREN  shift, and go to state 244
+
+
+State 200
+
+  117 expr: expr AND • expr
+  128     | expr BETWEEN expr AND • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 245
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 201
+
+  130 expr: expr IS NOT_KW NULL_KW •
+
+    $default  reduce using rule 130 (expr)
+
+
+State 202
+
+  147 func_call: aggregate_func LPAREN STAR RPAREN •
+
+    $default  reduce using rule 147 (func_call)
+
+
+State 203
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  146 func_call: aggregate_func LPAREN opt_distinct expr • RPAREN
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+    RPAREN   shift, and go to state 246
+
+
+State 204
+
+   73 tuple: LPAREN expr_list • RPAREN
+  114 expr_list: expr_list • COMMA expr
+
+    COMMA   shift, and go to state 184
+    RPAREN  shift, and go to state 247
+
+
+State 205
+
+   71 tuple_list: tuple_list COMMA • tuple
+
+    LPAREN  shift, and go to state 163
+
+    tuple  go to state 248
+
+
+State 206
+
+   68 insert_stmt: INSERT INTO IDENTIFIER LPAREN expr_list RPAREN • VALUES insert_values_list
+
+    VALUES  shift, and go to state 249
+
+
+State 207
+
+   77 assignment: IDENTIFIER EQ expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 77 (assignment)
+
+
+State 208
+
+   75 assignment_list: assignment_list COMMA assignment •
+
+    $default  reduce using rule 75 (assignment_list)
+
+
+State 209
+
+   80 create_table_stmt: CREATE TABLE IF_KW NOT_KW EXISTS IDENTIFIER • LPAREN column_def_list RPAREN
+
+    LPAREN  shift, and go to state 250
+
+
+State 210
+
+   84 column_def: PRIMARY KEY • LPAREN IDENTIFIER RPAREN
+
+    LPAREN  shift, and go to state 251
+
+
+State 211
+
+   85 column_def: FOREIGN KEY • LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+    LPAREN  shift, and go to state 252
+
+
+State 212
+
+   86 data_type: INT_TYPE •
+
+    $default  reduce using rule 86 (data_type)
+
+
+State 213
+
+   87 data_type: VARCHAR_TYPE • LPAREN INT_LITERAL RPAREN
+
+    LPAREN  shift, and go to state 253
+
+
+State 214
+
+   88 data_type: CHAR_TYPE • LPAREN INT_LITERAL RPAREN
+
+    LPAREN  shift, and go to state 254
+
+
+State 215
+
+   89 data_type: TEXT_TYPE •
+
+    $default  reduce using rule 89 (data_type)
+
+
+State 216
+
+   90 data_type: FLOAT_TYPE •
+
+    $default  reduce using rule 90 (data_type)
+
+
+State 217
+
+   91 data_type: DOUBLE_TYPE •
+
+    $default  reduce using rule 91 (data_type)
+
+
+State 218
+
+   92 data_type: DECIMAL_TYPE • LPAREN INT_LITERAL COMMA INT_LITERAL RPAREN
+
+    LPAREN  shift, and go to state 255
+
+
+State 219
+
+   93 data_type: BOOLEAN_TYPE •
+
+    $default  reduce using rule 93 (data_type)
+
+
+State 220
+
+   94 data_type: DATE_TYPE •
+
+    $default  reduce using rule 94 (data_type)
+
+
+State 221
+
+   95 data_type: TIMESTAMP_TYPE •
+
+    $default  reduce using rule 95 (data_type)
+
+
+State 222
+
+   83 column_def: IDENTIFIER data_type • opt_column_constraints
+
+    $default  reduce using rule 97 (opt_column_constraints)
+
+    opt_column_constraints  go to state 256
+
+
+State 223
+
+   81 column_def_list: column_def_list COMMA • column_def
+
+    PRIMARY     shift, and go to state 173
+    FOREIGN     shift, and go to state 174
+    IDENTIFIER  shift, and go to state 175
+
+    column_def  go to state 257
+
+
+State 224
+
+   79 create_table_stmt: CREATE TABLE IDENTIFIER LPAREN column_def_list RPAREN •
+
+    $default  reduce using rule 79 (create_table_stmt)
+
+
+State 225
+
+  103 alter_table_stmt: ALTER TABLE IDENTIFIER ADD COLUMN column_def •
+
+    $default  reduce using rule 103 (alter_table_stmt)
+
+
+State 226
+
+  104 alter_table_stmt: ALTER TABLE IDENTIFIER DROP COLUMN IDENTIFIER •
+
+    $default  reduce using rule 104 (alter_table_stmt)
+
+
+State 227
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+  159 when_then_clause: WHEN expr THEN expr •
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 159 (when_then_clause)
+
+
+State 228
+
+  114 expr_list: expr_list COMMA expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 114 (expr_list)
+
+
+State 229
+
+   39 table_ref: LPAREN select_stmt RPAREN • AS IDENTIFIER
+
+    AS  shift, and go to state 258
+
+
+State 230
+
+   36 table_ref_list: table_ref_list COMMA table_ref •
+   40 table_ref: table_ref • join_type table_ref ON expr
+
+    JOIN   shift, and go to state 189
+    INNER  shift, and go to state 190
+    LEFT   shift, and go to state 191
+    RIGHT  shift, and go to state 192
+    FULL   shift, and go to state 193
+    CROSS  shift, and go to state 194
+
+    $default  reduce using rule 36 (table_ref_list)
+
+    join_type  go to state 195
+
+
+State 231
+
+   42 join_type: INNER JOIN •
+
+    $default  reduce using rule 42 (join_type)
+
+
+State 232
+
+   43 join_type: LEFT JOIN •
+
+    $default  reduce using rule 43 (join_type)
+
+
+State 233
+
+   44 join_type: LEFT OUTER • JOIN
+
+    JOIN  shift, and go to state 259
+
+
+State 234
+
+   45 join_type: RIGHT JOIN •
+
+    $default  reduce using rule 45 (join_type)
+
+
+State 235
+
+   46 join_type: RIGHT OUTER • JOIN
+
+    JOIN  shift, and go to state 260
+
+
+State 236
+
+   47 join_type: FULL JOIN •
+
+    $default  reduce using rule 47 (join_type)
+
+
+State 237
+
+   48 join_type: FULL OUTER • JOIN
+
+    JOIN  shift, and go to state 261
+
+
+State 238
+
+   49 join_type: CROSS JOIN •
+
+    $default  reduce using rule 49 (join_type)
+
+
+State 239
+
+   40 table_ref: table_ref • join_type table_ref ON expr
+   40          | table_ref join_type table_ref • ON expr
+
+    JOIN   shift, and go to state 189
+    INNER  shift, and go to state 190
+    LEFT   shift, and go to state 191
+    RIGHT  shift, and go to state 192
+    FULL   shift, and go to state 193
+    CROSS  shift, and go to state 194
+    ON     shift, and go to state 262
+
+    join_type  go to state 195
+
+
+State 240
+
+   52 opt_group_by: GROUP BY • expr_list
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr_list       go to state 263
+    expr            go to state 131
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 241
+
+   54 opt_having: HAVING • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 264
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 242
+
+   22 select_expr: SELECT opt_distinct target_list opt_from opt_where opt_group_by opt_having • opt_order_by opt_limit
+
+    ORDER  shift, and go to state 265
+
+    $default  reduce using rule 57 (opt_order_by)
+
+    opt_order_by  go to state 266
+
+
+State 243
+
+  127 expr: expr IN LPAREN select_stmt RPAREN •
+
+    $default  reduce using rule 127 (expr)
+
+
+State 244
+
+  126 expr: expr IN LPAREN expr_list RPAREN •
+
+    $default  reduce using rule 126 (expr)
+
+
+State 245
+
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  117     | expr AND expr •
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  128     | expr BETWEEN expr AND expr •
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    AND       reduce using rule 117 (expr)
+    AND       [reduce using rule 128 (expr)]
+    OR        reduce using rule 117 (expr)
+    OR        [reduce using rule 128 (expr)]
+    $default  reduce using rule 128 (expr)
+
+
+State 246
+
+  146 func_call: aggregate_func LPAREN opt_distinct expr RPAREN •
+
+    $default  reduce using rule 146 (func_call)
+
+
+State 247
+
+   73 tuple: LPAREN expr_list RPAREN •
+
+    $default  reduce using rule 73 (tuple)
+
+
+State 248
+
+   71 tuple_list: tuple_list COMMA tuple •
+
+    $default  reduce using rule 71 (tuple_list)
+
+
+State 249
+
+   68 insert_stmt: INSERT INTO IDENTIFIER LPAREN expr_list RPAREN VALUES • insert_values_list
+
+    LPAREN  shift, and go to state 163
+
+    insert_values_list  go to state 267
+    tuple_list          go to state 165
+    tuple               go to state 166
+
+
+State 250
+
+   80 create_table_stmt: CREATE TABLE IF_KW NOT_KW EXISTS IDENTIFIER LPAREN • column_def_list RPAREN
+
+    PRIMARY     shift, and go to state 173
+    FOREIGN     shift, and go to state 174
+    IDENTIFIER  shift, and go to state 175
+
+    column_def_list  go to state 268
+    column_def       go to state 177
+
+
+State 251
+
+   84 column_def: PRIMARY KEY LPAREN • IDENTIFIER RPAREN
+
+    IDENTIFIER  shift, and go to state 269
+
+
+State 252
+
+   85 column_def: FOREIGN KEY LPAREN • IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+    IDENTIFIER  shift, and go to state 270
+
+
+State 253
+
+   87 data_type: VARCHAR_TYPE LPAREN • INT_LITERAL RPAREN
+
+    INT_LITERAL  shift, and go to state 271
+
+
+State 254
+
+   88 data_type: CHAR_TYPE LPAREN • INT_LITERAL RPAREN
+
+    INT_LITERAL  shift, and go to state 272
+
+
+State 255
+
+   92 data_type: DECIMAL_TYPE LPAREN • INT_LITERAL COMMA INT_LITERAL RPAREN
+
+    INT_LITERAL  shift, and go to state 273
+
+
+State 256
+
+   83 column_def: IDENTIFIER data_type opt_column_constraints •
+   96 opt_column_constraints: opt_column_constraints • column_constraint
+
+    PRIMARY         shift, and go to state 274
+    UNIQUE          shift, and go to state 275
+    DEFAULT         shift, and go to state 276
+    AUTO_INCREMENT  shift, and go to state 277
+    NOT_KW          shift, and go to state 278
+
+    $default  reduce using rule 83 (column_def)
+
+    column_constraint  go to state 279
+
+
+State 257
+
+   81 column_def_list: column_def_list COMMA column_def •
+
+    $default  reduce using rule 81 (column_def_list)
+
+
+State 258
+
+   39 table_ref: LPAREN select_stmt RPAREN AS • IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 280
+
+
+State 259
+
+   44 join_type: LEFT OUTER JOIN •
+
+    $default  reduce using rule 44 (join_type)
+
+
+State 260
+
+   46 join_type: RIGHT OUTER JOIN •
+
+    $default  reduce using rule 46 (join_type)
+
+
+State 261
+
+   48 join_type: FULL OUTER JOIN •
+
+    $default  reduce using rule 48 (join_type)
+
+
+State 262
+
+   40 table_ref: table_ref join_type table_ref ON • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 281
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 263
+
+   52 opt_group_by: GROUP BY expr_list •
+  114 expr_list: expr_list • COMMA expr
+
+    COMMA  shift, and go to state 184
+
+    $default  reduce using rule 52 (opt_group_by)
+
+
+State 264
+
+   54 opt_having: HAVING expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 54 (opt_having)
+
+
+State 265
+
+   56 opt_order_by: ORDER • BY order_item_list
+
+    BY  shift, and go to state 282
+
+
+State 266
+
+   22 select_expr: SELECT opt_distinct target_list opt_from opt_where opt_group_by opt_having opt_order_by • opt_limit
+
+    LIMIT  shift, and go to state 283
+
+    $default  reduce using rule 66 (opt_limit)
+
+    opt_limit  go to state 284
+
+
+State 267
+
+   68 insert_stmt: INSERT INTO IDENTIFIER LPAREN expr_list RPAREN VALUES insert_values_list •
+
+    $default  reduce using rule 68 (insert_stmt)
+
+
+State 268
+
+   80 create_table_stmt: CREATE TABLE IF_KW NOT_KW EXISTS IDENTIFIER LPAREN column_def_list • RPAREN
+   81 column_def_list: column_def_list • COMMA column_def
+
+    COMMA   shift, and go to state 223
+    RPAREN  shift, and go to state 285
+
+
+State 269
+
+   84 column_def: PRIMARY KEY LPAREN IDENTIFIER • RPAREN
+
+    RPAREN  shift, and go to state 286
+
+
+State 270
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER • RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+    RPAREN  shift, and go to state 287
+
+
+State 271
+
+   87 data_type: VARCHAR_TYPE LPAREN INT_LITERAL • RPAREN
+
+    RPAREN  shift, and go to state 288
+
+
+State 272
+
+   88 data_type: CHAR_TYPE LPAREN INT_LITERAL • RPAREN
+
+    RPAREN  shift, and go to state 289
+
+
+State 273
+
+   92 data_type: DECIMAL_TYPE LPAREN INT_LITERAL • COMMA INT_LITERAL RPAREN
+
+    COMMA  shift, and go to state 290
+
+
+State 274
+
+   98 column_constraint: PRIMARY • KEY
+
+    KEY  shift, and go to state 291
+
+
+State 275
+
+  100 column_constraint: UNIQUE •
+
+    $default  reduce using rule 100 (column_constraint)
+
+
+State 276
+
+  102 column_constraint: DEFAULT • expr
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    expr            go to state 292
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 277
+
+  101 column_constraint: AUTO_INCREMENT •
+
+    $default  reduce using rule 101 (column_constraint)
+
+
+State 278
+
+   99 column_constraint: NOT_KW • NULL_KW
+
+    NULL_KW  shift, and go to state 293
+
+
+State 279
+
+   96 opt_column_constraints: opt_column_constraints column_constraint •
+
+    $default  reduce using rule 96 (opt_column_constraints)
+
+
+State 280
+
+   39 table_ref: LPAREN select_stmt RPAREN AS IDENTIFIER •
+
+    $default  reduce using rule 39 (table_ref)
+
+
+State 281
+
+   40 table_ref: table_ref join_type table_ref ON expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 40 (table_ref)
+
+
+State 282
+
+   56 opt_order_by: ORDER BY • order_item_list
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    order_item_list  go to state 294
+    order_item       go to state 295
+    expr             go to state 296
+    func_call        go to state 63
+    aggregate_func   go to state 64
+    case_expr        go to state 65
+
+
+State 283
+
+   64 opt_limit: LIMIT • INT_LITERAL
+   65          | LIMIT • INT_LITERAL OFFSET INT_LITERAL
+
+    INT_LITERAL  shift, and go to state 297
+
+
+State 284
+
+   22 select_expr: SELECT opt_distinct target_list opt_from opt_where opt_group_by opt_having opt_order_by opt_limit •
+
+    $default  reduce using rule 22 (select_expr)
+
+
+State 285
+
+   80 create_table_stmt: CREATE TABLE IF_KW NOT_KW EXISTS IDENTIFIER LPAREN column_def_list RPAREN •
+
+    $default  reduce using rule 80 (create_table_stmt)
+
+
+State 286
+
+   84 column_def: PRIMARY KEY LPAREN IDENTIFIER RPAREN •
+
+    $default  reduce using rule 84 (column_def)
+
+
+State 287
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER RPAREN • REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+    REFERENCES  shift, and go to state 298
+
+
+State 288
+
+   87 data_type: VARCHAR_TYPE LPAREN INT_LITERAL RPAREN •
+
+    $default  reduce using rule 87 (data_type)
+
+
+State 289
+
+   88 data_type: CHAR_TYPE LPAREN INT_LITERAL RPAREN •
+
+    $default  reduce using rule 88 (data_type)
+
+
+State 290
+
+   92 data_type: DECIMAL_TYPE LPAREN INT_LITERAL COMMA • INT_LITERAL RPAREN
+
+    INT_LITERAL  shift, and go to state 299
+
+
+State 291
+
+   98 column_constraint: PRIMARY KEY •
+
+    $default  reduce using rule 98 (column_constraint)
+
+
+State 292
+
+  102 column_constraint: DEFAULT expr •
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 102 (column_constraint)
+
+
+State 293
+
+   99 column_constraint: NOT_KW NULL_KW •
+
+    $default  reduce using rule 99 (column_constraint)
+
+
+State 294
+
+   56 opt_order_by: ORDER BY order_item_list •
+   58 order_item_list: order_item_list • COMMA order_item
+
+    COMMA  shift, and go to state 300
+
+    $default  reduce using rule 56 (opt_order_by)
+
+
+State 295
+
+   59 order_item_list: order_item •
+
+    $default  reduce using rule 59 (order_item_list)
+
+
+State 296
+
+   60 order_item: expr • opt_asc_desc
+  116 expr: expr • OR expr
+  117     | expr • AND expr
+  119     | expr • EQ expr
+  120     | expr • NE expr
+  121     | expr • LT expr
+  122     | expr • GT expr
+  123     | expr • LE expr
+  124     | expr • GE expr
+  125     | expr • LIKE expr
+  126     | expr • IN LPAREN expr_list RPAREN
+  127     | expr • IN LPAREN select_stmt RPAREN
+  128     | expr • BETWEEN expr AND expr
+  129     | expr • IS NULL_KW
+  130     | expr • IS NOT_KW NULL_KW
+  131     | expr • PLUS expr
+  132     | expr • MINUS expr
+  133     | expr • STAR expr
+  134     | expr • SLASH expr
+
+    ASC      shift, and go to state 301
+    DESC     shift, and go to state 302
+    AND      shift, and go to state 93
+    OR       shift, and go to state 94
+    LIKE     shift, and go to state 95
+    IN       shift, and go to state 96
+    BETWEEN  shift, and go to state 97
+    IS       shift, and go to state 98
+    EQ       shift, and go to state 100
+    NE       shift, and go to state 101
+    LT       shift, and go to state 102
+    GT       shift, and go to state 103
+    LE       shift, and go to state 104
+    GE       shift, and go to state 105
+    PLUS     shift, and go to state 106
+    MINUS    shift, and go to state 107
+    STAR     shift, and go to state 108
+    SLASH    shift, and go to state 109
+
+    $default  reduce using rule 63 (opt_asc_desc)
+
+    opt_asc_desc  go to state 303
+
+
+State 297
+
+   64 opt_limit: LIMIT INT_LITERAL •
+   65          | LIMIT INT_LITERAL • OFFSET INT_LITERAL
+
+    OFFSET  shift, and go to state 304
+
+    $default  reduce using rule 64 (opt_limit)
+
+
+State 298
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES • IDENTIFIER LPAREN IDENTIFIER RPAREN
+
+    IDENTIFIER  shift, and go to state 305
+
+
+State 299
+
+   92 data_type: DECIMAL_TYPE LPAREN INT_LITERAL COMMA INT_LITERAL • RPAREN
+
+    RPAREN  shift, and go to state 306
+
+
+State 300
+
+   58 order_item_list: order_item_list COMMA • order_item
+
+    NULL_KW         shift, and go to state 45
+    NOT_KW          shift, and go to state 46
+    CASE            shift, and go to state 47
+    COUNT           shift, and go to state 48
+    SUM             shift, and go to state 49
+    AVG             shift, and go to state 50
+    MIN             shift, and go to state 51
+    MAX             shift, and go to state 52
+    IDENTIFIER      shift, and go to state 53
+    STRING_LITERAL  shift, and go to state 54
+    INT_LITERAL     shift, and go to state 55
+    FLOAT_LITERAL   shift, and go to state 56
+    MINUS           shift, and go to state 57
+    LPAREN          shift, and go to state 59
+
+    order_item      go to state 307
+    expr            go to state 296
+    func_call       go to state 63
+    aggregate_func  go to state 64
+    case_expr       go to state 65
+
+
+State 301
+
+   61 opt_asc_desc: ASC •
+
+    $default  reduce using rule 61 (opt_asc_desc)
+
+
+State 302
+
+   62 opt_asc_desc: DESC •
+
+    $default  reduce using rule 62 (opt_asc_desc)
+
+
+State 303
+
+   60 order_item: expr opt_asc_desc •
+
+    $default  reduce using rule 60 (order_item)
+
+
+State 304
+
+   65 opt_limit: LIMIT INT_LITERAL OFFSET • INT_LITERAL
+
+    INT_LITERAL  shift, and go to state 308
+
+
+State 305
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER • LPAREN IDENTIFIER RPAREN
+
+    LPAREN  shift, and go to state 309
+
+
+State 306
+
+   92 data_type: DECIMAL_TYPE LPAREN INT_LITERAL COMMA INT_LITERAL RPAREN •
+
+    $default  reduce using rule 92 (data_type)
+
+
+State 307
+
+   58 order_item_list: order_item_list COMMA order_item •
+
+    $default  reduce using rule 58 (order_item_list)
+
+
+State 308
+
+   65 opt_limit: LIMIT INT_LITERAL OFFSET INT_LITERAL •
+
+    $default  reduce using rule 65 (opt_limit)
+
+
+State 309
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN • IDENTIFIER RPAREN
+
+    IDENTIFIER  shift, and go to state 310
+
+
+State 310
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER • RPAREN
+
+    RPAREN  shift, and go to state 311
+
+
+State 311
+
+   85 column_def: FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN •
+
+    $default  reduce using rule 85 (column_def)
