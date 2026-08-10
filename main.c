@@ -1,7 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <io.h>
+#include <windows.h>
+#define ISATTY _isatty
+#define STDIN_FD 0
+#else
 #include <unistd.h>
+#define ISATTY isatty
+#define STDIN_FD STDIN_FILENO
+#endif
+
 #include "ast.h"
 
 /* External Bison/Flex functions and variables */
@@ -28,6 +39,19 @@ int g_show_tokens = 0;
 #define COLOR_YELLOW  "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
 #define COLOR_BOLD    "\033[1m"
+
+/* Cross-Platform fmemopen Fallback for Windows */
+static FILE *open_query_stream(const char *query_str) {
+#ifdef _WIN32
+    FILE *stream = tmpfile();
+    if (!stream) return NULL;
+    fwrite(query_str, 1, strlen(query_str), stream);
+    rewind(stream);
+    return stream;
+#else
+    return fmemopen((void *)query_str, strlen(query_str), "r");
+#endif
+}
 
 static void print_usage(const char *prog_name) {
     printf("SQL Query Validator & AST Visualizer (Flex & Bison)\n");
@@ -58,13 +82,11 @@ static void print_caret_error(const char *query_buffer, int line, int col, const
         p++;
     }
 
-    /* Print line text, safely skipping '\r' carriage returns */
+    /* Print line text */
     printf("  ");
     const char *line_end = line_start;
     while (*line_end && *line_end != '\n') {
-        if (*line_end != '\r') {
-            putchar(*line_end);
-        }
+        putchar(*line_end);
         line_end++;
     }
     printf("\n  ");
@@ -78,41 +100,15 @@ static void print_caret_error(const char *query_buffer, int line, int col, const
     printf("%s^ Unexpected position%s\n", COLOR_RED, COLOR_RESET);
 }
 
-static void sanitize_buffer(char *str) {
-    /* Filter out carriage returns '\r' and non-printable control characters in-place */
-    char *src = str;
-    char *dst = str;
-    while (*src) {
-        unsigned char c = (unsigned char)*src;
-        if (c == '\r') {
-            src++;
-            continue;
-        }
-        if (c < 32 && c != '\n' && c != '\t') {
-            *dst++ = ' ';
-        } else {
-            *dst++ = *src;
-        }
-        src++;
-    }
-    *dst = '\0';
-}
-
 static int parse_query_string(const char *query_str) {
     g_syntax_error = 0;
     g_ast_root = NULL;
     yylineno = 1;
     yycolumn = 1;
 
-    /* Create clean copy of query string without \r or non-printable control chars */
-    char *clean_query = strdup(query_str);
-    if (!clean_query) return 1;
-    sanitize_buffer(clean_query);
-
-    FILE *stream = fmemopen((void *)clean_query, strlen(clean_query), "r");
+    FILE *stream = open_query_stream(query_str);
     if (!stream) {
-        perror("fmemopen failed");
-        free(clean_query);
+        perror("Failed to create query stream");
         return 1;
     }
 
@@ -129,15 +125,13 @@ static int parse_query_string(const char *query_str) {
             ast_free(g_ast_root);
             g_ast_root = NULL;
         }
-        free(clean_query);
         return 0;
     } else {
-        print_caret_error(clean_query, g_error_line > 0 ? g_error_line : 1, g_error_column > 0 ? g_error_column : 1, g_last_error);
+        print_caret_error(query_str, g_error_line > 0 ? g_error_line : 1, g_error_column > 0 ? g_error_column : 1, g_last_error);
         if (g_ast_root) {
             ast_free(g_ast_root);
             g_ast_root = NULL;
         }
-        free(clean_query);
         return 1;
     }
 }
@@ -171,7 +165,7 @@ static int parse_file(const char *filename) {
 }
 
 static int run_input_loop(void) {
-    int is_interactive = isatty(STDIN_FILENO);
+    int is_interactive = ISATTY(STDIN_FD);
 
     if (is_interactive) {
         printf("%s=======================================================%s\n", COLOR_CYAN, COLOR_RESET);
@@ -180,8 +174,8 @@ static int run_input_loop(void) {
         printf("%s=======================================================%s\n\n", COLOR_CYAN, COLOR_RESET);
     }
 
-    char buffer[8192] = "";
-    char line[1024];
+    char buffer[4096] = "";
+    char line[512];
     int overall_exit_code = 0;
 
     while (1) {
@@ -204,7 +198,6 @@ static int run_input_loop(void) {
             break;
         }
 
-        sanitize_buffer(line);
         strcat(buffer, line);
 
         /* Check if statement terminates with ';' */
@@ -223,6 +216,10 @@ static int run_input_loop(void) {
 }
 
 int main(int argc, char *argv[]) {
+    #ifdef _WIN32
+    SetConsoleOutputCP(65001); /* Force Windows Console to UTF-8 for AST Tree */
+    #endif
+
     const char *input_filename = NULL;
 
     for (int i = 1; i < argc; i++) {
