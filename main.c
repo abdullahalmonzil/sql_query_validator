@@ -4,6 +4,7 @@
 
 #ifdef _WIN32
 #include <io.h>
+#include <windows.h>
 #define ISATTY _isatty
 #define STDIN_FD 0
 #else
@@ -215,6 +216,10 @@ static int run_input_loop(void) {
 }
 
 int main(int argc, char *argv[]) {
+    #ifdef _WIN32
+    SetConsoleOutputCP(65001); /* Force Windows Console to UTF-8 for AST Tree */
+    #endif
+
     const char *input_filename = NULL;
 
     for (int i = 1; i < argc; i++) {
