@@ -32,9 +32,11 @@ int g_error_column = 0;
 /* Tokens: Keywords */
 %token <str> SELECT FROM WHERE GROUP BY HAVING ORDER ASC DESC LIMIT OFFSET AS DISTINCT ALL
 %token <str> INSERT INTO VALUES UPDATE SET DELETE
-%token <str> CREATE TABLE ALTER ADD DROP TRUNCATE RENAME TO COLUMN INDEX
+%token <str> CREATE TABLE ALTER ADD MODIFY DROP TRUNCATE RENAME TO COLUMN INDEX
 %token <str> PRIMARY KEY FOREIGN REFERENCES NULL_KW UNIQUE DEFAULT CHECK CONSTRAINT AUTO_INCREMENT
-%token <str> INT_TYPE VARCHAR_TYPE CHAR_TYPE TEXT_TYPE FLOAT_TYPE DOUBLE_TYPE DECIMAL_TYPE BOOLEAN_TYPE DATE_TYPE TIMESTAMP_TYPE
+%token <str> INT_TYPE BIGINT_TYPE SMALLINT_TYPE TINYINT_TYPE NUMBER_TYPE NUMERIC_TYPE
+%token <str> VARCHAR_TYPE VARCHAR2_TYPE CHAR_TYPE TEXT_TYPE FLOAT_TYPE DOUBLE_TYPE REAL_TYPE DECIMAL_TYPE
+%token <str> BOOLEAN_TYPE DATE_TYPE DATETIME_TYPE TIMESTAMP_TYPE BLOB_TYPE CLOB_TYPE
 %token <str> JOIN INNER LEFT RIGHT FULL OUTER CROSS ON USING
 %token <str> UNION INTERSECT EXCEPT
 %token <str> AND OR NOT_KW LIKE IN BETWEEN IS EXISTS CASE WHEN THEN ELSE END IF_KW
@@ -55,7 +57,7 @@ int g_error_column = 0;
 %type <node> opt_where opt_group_by opt_having opt_order_by order_item_list order_item opt_asc_desc opt_limit
 %type <node> expr expr_list opt_expr_list case_expr when_then_list when_then_clause opt_else func_call aggregate_func
 %type <node> insert_values_list tuple_list tuple assignment_list assignment
-%type <node> column_def_list column_def data_type opt_column_constraints column_constraint
+%type <node> column_def_list column_def data_type opt_column_constraints column_constraint identifier_list
 
 /* Precedence Rules */
 %left UNION EXCEPT INTERSECT
@@ -468,16 +470,69 @@ column_def:
         free($4); free($7); free($9);
         $$ = fk;
     }
+    | CONSTRAINT IDENTIFIER PRIMARY KEY LPAREN IDENTIFIER RPAREN {
+        ASTNode *pk = ast_create_node(AST_CONSTRAINT, "PRIMARY_KEY", $6);
+        free($2); free($6);
+        $$ = pk;
+    }
+    | CONSTRAINT IDENTIFIER FOREIGN KEY LPAREN IDENTIFIER RPAREN REFERENCES IDENTIFIER LPAREN IDENTIFIER RPAREN {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "(%s) REFERENCES %s(%s)", $6, $9, $11);
+        ASTNode *fk = ast_create_node(AST_CONSTRAINT, "FOREIGN_KEY", buf);
+        free($2); free($6); free($9); free($11);
+        $$ = fk;
+    }
+    | CHECK LPAREN expr RPAREN {
+        ASTNode *cnode = ast_create_node(AST_CONSTRAINT, "TABLE_CHECK", NULL);
+        ast_add_child(cnode, $3);
+        $$ = cnode;
+    }
+    | CONSTRAINT IDENTIFIER CHECK LPAREN expr RPAREN {
+        ASTNode *cnode = ast_create_node(AST_CONSTRAINT, "TABLE_CHECK", $2);
+        ast_add_child(cnode, $5);
+        free($2);
+        $$ = cnode;
+    }
     ;
 
 data_type:
     INT_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "INT"); }
+    | BIGINT_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "BIGINT"); }
+    | SMALLINT_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "SMALLINT"); }
+    | TINYINT_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "TINYINT"); }
+    | NUMBER_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "NUMBER"); }
+    | NUMBER_TYPE LPAREN INT_LITERAL RPAREN {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "NUMBER(%s)", $3);
+        free($3);
+        $$ = ast_create_node(AST_OTHER, "TYPE", buf);
+    }
+    | NUMBER_TYPE LPAREN INT_LITERAL COMMA INT_LITERAL RPAREN {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "NUMBER(%s,%s)", $3, $5);
+        free($3); free($5);
+        $$ = ast_create_node(AST_OTHER, "TYPE", buf);
+    }
+    | NUMERIC_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "NUMERIC"); }
+    | NUMERIC_TYPE LPAREN INT_LITERAL COMMA INT_LITERAL RPAREN {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "NUMERIC(%s,%s)", $3, $5);
+        free($3); free($5);
+        $$ = ast_create_node(AST_OTHER, "TYPE", buf);
+    }
     | VARCHAR_TYPE LPAREN INT_LITERAL RPAREN {
         char buf[64];
         snprintf(buf, sizeof(buf), "VARCHAR(%s)", $3);
         free($3);
         $$ = ast_create_node(AST_OTHER, "TYPE", buf);
     }
+    | VARCHAR2_TYPE LPAREN INT_LITERAL RPAREN {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "VARCHAR2(%s)", $3);
+        free($3);
+        $$ = ast_create_node(AST_OTHER, "TYPE", buf);
+    }
+    | CHAR_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "CHAR"); }
     | CHAR_TYPE LPAREN INT_LITERAL RPAREN {
         char buf[64];
         snprintf(buf, sizeof(buf), "CHAR(%s)", $3);
@@ -487,6 +542,8 @@ data_type:
     | TEXT_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "TEXT"); }
     | FLOAT_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "FLOAT"); }
     | DOUBLE_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "DOUBLE"); }
+    | REAL_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "REAL"); }
+    | DECIMAL_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "DECIMAL"); }
     | DECIMAL_TYPE LPAREN INT_LITERAL COMMA INT_LITERAL RPAREN {
         char buf[64];
         snprintf(buf, sizeof(buf), "DECIMAL(%s,%s)", $3, $5);
@@ -495,7 +552,10 @@ data_type:
     }
     | BOOLEAN_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "BOOLEAN"); }
     | DATE_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "DATE"); }
+    | DATETIME_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "DATETIME"); }
     | TIMESTAMP_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "TIMESTAMP"); }
+    | BLOB_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "BLOB"); }
+    | CLOB_TYPE { $$ = ast_create_node(AST_OTHER, "TYPE", "CLOB"); }
     ;
 
 opt_column_constraints:
@@ -522,22 +582,86 @@ column_constraint:
         ast_add_child(dnode, $2);
         $$ = dnode;
     }
+    | CHECK LPAREN expr RPAREN {
+        ASTNode *cnode = ast_create_node(AST_CONSTRAINT, "CHECK", NULL);
+        ast_add_child(cnode, $3);
+        $$ = cnode;
+    }
+    | CONSTRAINT IDENTIFIER CHECK LPAREN expr RPAREN {
+        ASTNode *cnode = ast_create_node(AST_CONSTRAINT, "CHECK", $2);
+        ast_add_child(cnode, $5);
+        free($2);
+        $$ = cnode;
+    }
+    | CONSTRAINT IDENTIFIER PRIMARY KEY {
+        ASTNode *cnode = ast_create_node(AST_CONSTRAINT, "PRIMARY_KEY", $2);
+        free($2);
+        $$ = cnode;
+    }
+    | CONSTRAINT IDENTIFIER UNIQUE {
+        ASTNode *cnode = ast_create_node(AST_CONSTRAINT, "UNIQUE", $2);
+        free($2);
+        $$ = cnode;
+    }
     ;
 
 /* ==================== ALTER / DROP / TRUNCATE / TCL ==================== */
 
 alter_table_stmt:
-    ALTER TABLE IDENTIFIER ADD COLUMN column_def {
+    ALTER TABLE IDENTIFIER ADD opt_column column_def {
         ASTNode *anode = ast_create_node(AST_ALTER_TABLE, "ALTER_TABLE_ADD", $3);
         ast_add_child(anode, $6);
         free($3);
         $$ = anode;
     }
-    | ALTER TABLE IDENTIFIER DROP COLUMN IDENTIFIER {
+    | ALTER TABLE IDENTIFIER ADD opt_column LPAREN column_def_list RPAREN {
+        ASTNode *anode = ast_create_node(AST_ALTER_TABLE, "ALTER_TABLE_ADD", $3);
+        ast_add_child(anode, $7);
+        free($3);
+        $$ = anode;
+    }
+    | ALTER TABLE IDENTIFIER MODIFY opt_column column_def {
+        ASTNode *anode = ast_create_node(AST_ALTER_TABLE, "ALTER_TABLE_MODIFY", $3);
+        ast_add_child(anode, $6);
+        free($3);
+        $$ = anode;
+    }
+    | ALTER TABLE IDENTIFIER MODIFY opt_column LPAREN column_def_list RPAREN {
+        ASTNode *anode = ast_create_node(AST_ALTER_TABLE, "ALTER_TABLE_MODIFY", $3);
+        ast_add_child(anode, $7);
+        free($3);
+        $$ = anode;
+    }
+    | ALTER TABLE IDENTIFIER DROP opt_column IDENTIFIER {
         ASTNode *anode = ast_create_node(AST_ALTER_TABLE, "ALTER_TABLE_DROP", $3);
         ast_add_child(anode, ast_create_node(AST_IDENTIFIER, "COLUMN", $6));
         free($3); free($6);
         $$ = anode;
+    }
+    | ALTER TABLE IDENTIFIER DROP opt_column LPAREN identifier_list RPAREN {
+        ASTNode *anode = ast_create_node(AST_ALTER_TABLE, "ALTER_TABLE_DROP", $3);
+        ast_add_child(anode, $7);
+        free($3);
+        $$ = anode;
+    }
+    ;
+
+opt_column:
+    COLUMN
+    | /* empty */
+    ;
+
+identifier_list:
+    identifier_list COMMA IDENTIFIER {
+        ast_add_child($1, ast_create_node(AST_IDENTIFIER, "COLUMN", $3));
+        free($3);
+        $$ = $1;
+    }
+    | IDENTIFIER {
+        ASTNode *ilist = ast_create_node(AST_OTHER, "COLUMN_LIST", NULL);
+        ast_add_child(ilist, ast_create_node(AST_IDENTIFIER, "COLUMN", $1));
+        free($1);
+        $$ = ilist;
     }
     ;
 

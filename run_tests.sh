@@ -70,8 +70,11 @@ run_valid_test "UPDATE statement" \
 run_valid_test "DELETE statement" \
   "DELETE FROM logs WHERE created_at < '2025-01-01';"
 
-run_valid_test "CREATE TABLE with Constraints" \
+run_valid_test "CREATE TABLE with Standard Constraints" \
   "CREATE TABLE employees (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, salary DECIMAL(10,2) DEFAULT 0.00);"
+
+run_valid_test "Oracle CREATE TABLE (NUMBER, VARCHAR2, NOT NULL UNIQUE)" \
+  "CREATE TABLE department (dept_id NUMBER PRIMARY KEY, dept_name VARCHAR2(100) NOT NULL UNIQUE);"
 
 run_valid_test "Transaction Control" \
   "BEGIN TRANSACTION; COMMIT;"

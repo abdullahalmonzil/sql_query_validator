@@ -39,12 +39,18 @@ CREATE TABLE products (
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
--- Test 10: ALTER TABLE, DROP TABLE, TRUNCATE TABLE
+-- Test 10: Oracle CREATE TABLE with NUMBER and VARCHAR2
+CREATE TABLE department (
+    dept_id NUMBER PRIMARY KEY,
+    dept_name VARCHAR2(100) NOT NULL UNIQUE
+);
+
+-- Test 11: ALTER TABLE, DROP TABLE, TRUNCATE TABLE
 ALTER TABLE users ADD COLUMN phone VARCHAR(20);
 DROP TABLE IF EXISTS old_logs;
 TRUNCATE TABLE temp_data;
 
--- Test 11: Transaction Control
+-- Test 12: Transaction Control
 BEGIN TRANSACTION;
 UPDATE accounts SET balance = balance - 100 WHERE id = 1;
 UPDATE accounts SET balance = balance + 100 WHERE id = 2;
