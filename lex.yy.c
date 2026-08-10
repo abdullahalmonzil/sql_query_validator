@@ -831,7 +831,7 @@ static char* clean_string(const char *str) {
  */
 #include <unistd.h>
 #endif
-
+    
 #ifndef YY_EXTRA_TYPE
 #define YY_EXTRA_TYPE void *
 #endif
