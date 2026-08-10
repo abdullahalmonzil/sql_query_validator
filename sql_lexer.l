@@ -34,7 +34,7 @@ static char* clean_string(const char *str) {
 
 %%
 
-[ \t\r]+                { /* Skip whitespace */ }
+[ \t\r\xc2\xa0]+          { /* Skip whitespace including non-breaking spaces */ }
 \n                      { yycolumn = 1; }
 
 "--".*                  { /* Skip single-line comments */ }
@@ -66,7 +66,7 @@ static char* clean_string(const char *str) {
 
 "INSERT"                { return INSERT; }
 "INTO"                  { return INTO; }
-"VALUES"                { return VALUES; }
+"VALUES"|"VALUE"        { return VALUES; }
 "UPDATE"                { return UPDATE; }
 "SET"                   { return SET; }
 "DELETE"                { return DELETE; }
@@ -75,6 +75,7 @@ static char* clean_string(const char *str) {
 "TABLE"                 { return TABLE; }
 "ALTER"                 { return ALTER; }
 "ADD"                   { return ADD; }
+"MODIFY"                { return MODIFY; }
 "DROP"                  { return DROP; }
 "TRUNCATE"              { return TRUNCATE; }
 "RENAME"                { return RENAME; }
@@ -96,15 +97,25 @@ static char* clean_string(const char *str) {
 "AUTO_INCREMENT"        { return AUTO_INCREMENT; }
 
 "INT"|"INTEGER"         { return INT_TYPE; }
+"BIGINT"                { return BIGINT_TYPE; }
+"SMALLINT"              { return SMALLINT_TYPE; }
+"TINYINT"               { return TINYINT_TYPE; }
+"NUMBER"                { return NUMBER_TYPE; }
+"NUMERIC"               { return NUMERIC_TYPE; }
+"VARCHAR2"              { return VARCHAR2_TYPE; }
 "VARCHAR"               { return VARCHAR_TYPE; }
 "CHAR"                  { return CHAR_TYPE; }
 "TEXT"                  { return TEXT_TYPE; }
 "FLOAT"                 { return FLOAT_TYPE; }
 "DOUBLE"                { return DOUBLE_TYPE; }
+"REAL"                  { return REAL_TYPE; }
 "DECIMAL"               { return DECIMAL_TYPE; }
 "BOOL"|"BOOLEAN"        { return BOOLEAN_TYPE; }
 "DATE"                  { return DATE_TYPE; }
+"DATETIME"              { return DATETIME_TYPE; }
 "TIMESTAMP"             { return TIMESTAMP_TYPE; }
+"BLOB"                  { return BLOB_TYPE; }
+"CLOB"                  { return CLOB_TYPE; }
 
 "JOIN"                  { return JOIN; }
 "INNER"                 { return INNER; }
