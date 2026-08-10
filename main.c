@@ -1,7 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <io.h>
+#define ISATTY _isatty
+#define STDIN_FD 0
+#else
 #include <unistd.h>
+#define ISATTY isatty
+#define STDIN_FD STDIN_FILENO
+#endif
+
 #include "ast.h"
 
 /* External Bison/Flex functions and variables */
@@ -28,6 +38,19 @@ int g_show_tokens = 0;
 #define COLOR_YELLOW  "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
 #define COLOR_BOLD    "\033[1m"
+
+/* Cross-Platform fmemopen Fallback for Windows */
+static FILE *open_query_stream(const char *query_str) {
+#ifdef _WIN32
+    FILE *stream = tmpfile();
+    if (!stream) return NULL;
+    fwrite(query_str, 1, strlen(query_str), stream);
+    rewind(stream);
+    return stream;
+#else
+    return fmemopen((void *)query_str, strlen(query_str), "r");
+#endif
+}
 
 static void print_usage(const char *prog_name) {
     printf("SQL Query Validator & AST Visualizer (Flex & Bison)\n");
@@ -82,9 +105,9 @@ static int parse_query_string(const char *query_str) {
     yylineno = 1;
     yycolumn = 1;
 
-    FILE *stream = fmemopen((void *)query_str, strlen(query_str), "r");
+    FILE *stream = open_query_stream(query_str);
     if (!stream) {
-        perror("fmemopen failed");
+        perror("Failed to create query stream");
         return 1;
     }
 
@@ -141,7 +164,7 @@ static int parse_file(const char *filename) {
 }
 
 static int run_input_loop(void) {
-    int is_interactive = isatty(STDIN_FILENO);
+    int is_interactive = ISATTY(STDIN_FD);
 
     if (is_interactive) {
         printf("%s=======================================================%s\n", COLOR_CYAN, COLOR_RESET);
