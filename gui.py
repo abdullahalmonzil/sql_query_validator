@@ -149,10 +149,11 @@ class SQLValidatorApp:
         )
         btn_run.pack(side=tk.LEFT, padx=(0, 8))
 
-        btn_open = ttk.Button(toolbar, text="📁 Open File", command=self.open_file)
+        # Replaced failing emojis with standard text for Linux compatibility
+        btn_open = ttk.Button(toolbar, text="Open File", command=self.open_file)
         btn_open.pack(side=tk.LEFT, padx=4)
 
-        btn_clear = ttk.Button(toolbar, text="🧹 Clear", command=self.clear_editor)
+        btn_clear = ttk.Button(toolbar, text="Clear", command=self.clear_editor)
         btn_clear.pack(side=tk.LEFT, padx=4)
 
         flag_container = ttk.Frame(toolbar, style="Card.TFrame")
@@ -205,11 +206,12 @@ class SQLValidatorApp:
         self.notebook.pack(fill=tk.BOTH, expand=True)
 
         self.tab_tree = ttk.Frame(self.notebook, style="Card.TFrame")
-        self.notebook.add(self.tab_tree, text="🌳 Visual AST Tree")
+        # Replaced emojis with standard geometric shapes
+        self.notebook.add(self.tab_tree, text=" ❖ Visual AST Tree")
         self.create_tree_tab()
 
         self.tab_output = ttk.Frame(self.notebook, style="Card.TFrame")
-        self.notebook.add(self.tab_output, text="📋 Console Output")
+        self.notebook.add(self.tab_output, text=" ≡ Console Output")
         self.create_output_tab()
 
     def create_tree_tab(self):
@@ -349,7 +351,8 @@ class SQLValidatorApp:
             return
 
         root_label = ast_lines[0].strip()
-        root_id = self.ast_tree.insert("", tk.END, text=f" 📂 {root_label}", open=True)
+        # Replaced root emoji with basic unicode
+        root_id = self.ast_tree.insert("", tk.END, text=f" ■ {root_label}", open=True)
 
         stack = [(0, root_id)]
 
@@ -364,10 +367,11 @@ class SQLValidatorApp:
             node_label = line[len(prefix) :].strip()
             if not node_label: continue
 
-            icon = "🏷️"
-            if "STMT" in node_label or "CLAUSE" in node_label: icon = "📁"
-            elif "OPERATOR" in node_label or "JOIN" in node_label: icon = "⚙️"
-            elif "COLUMN" in node_label or "TABLE" in node_label or "FIELD" in node_label: icon = "🔹"
+            # Replaced node emojis with basic unicode geometric shapes for Linux support
+            icon = "○"
+            if "STMT" in node_label or "CLAUSE" in node_label: icon = "►"
+            elif "OPERATOR" in node_label or "JOIN" in node_label: icon = "◆"
+            elif "COLUMN" in node_label or "TABLE" in node_label or "FIELD" in node_label: icon = "●"
 
             while stack and stack[-1][0] >= depth:
                 stack.pop()
