@@ -53,19 +53,22 @@ class SQLValidatorApp:
         self.load_sample("Basic SELECT Query")
 
     def find_executable(self) -> str:
-        """Finds the compiled C binary cross-platform."""
-        candidates = [
-            "sql_validator.exe",    # Windows
-            "./sql_validator.exe",  # Windows local
-            "sql_validator",        # Linux / macOS
-            "./sql_validator"       # Linux / macOS local
-        ]
+        """Finds the compiled C binary strictly based on the OS."""
+        if IS_WIN:
+            # Windows strictly looks for the .exe
+            candidates = ["sql_validator.exe", ".\\sql_validator.exe"]
+            default = "sql_validator.exe"
+        else:
+            # Linux/macOS strictly looks for the extensionless binary
+            candidates = ["sql_validator", "./sql_validator"]
+            default = "sql_validator"
+            
         for cand in candidates:
             if os.path.exists(cand):
                 return os.path.abspath(cand)
                 
-        # If not found, return the platform-specific default for error messages
-        return "sql_validator.exe" if IS_WIN else "sql_validator"
+        # If not found, return the OS-specific default for error messages
+        return default
 
     def configure_styles(self):
         self.style.configure("TFrame", background="#1f2329")
