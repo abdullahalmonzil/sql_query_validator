@@ -1,9 +1,22 @@
 import os
+import sys
 import re
 import subprocess
 import tempfile
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+
+# ================= CROSS-PLATFORM SETTINGS =================
+IS_WIN = sys.platform == "win32"
+
+# Dynamic Fonts based on OS
+FONT_UI = ("Segoe UI", 10) if IS_WIN else ("Helvetica", 10)
+FONT_UI_BOLD = ("Segoe UI", 10, "bold") if IS_WIN else ("Helvetica", 10, "bold")
+FONT_UI_H = ("Segoe UI", 11, "bold") if IS_WIN else ("Helvetica", 11, "bold")
+FONT_BTN = ("Segoe UI", 9, "bold") if IS_WIN else ("Helvetica", 9, "bold")
+FONT_CODE = ("Consolas", 10) if IS_WIN else ("monospace", 10)
+FONT_CODE_L = ("Consolas", 11) if IS_WIN else ("monospace", 11)
+# ===========================================================
 
 # --- ANSI Escape Code Remover ---
 ANSI_REGEX = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
@@ -23,7 +36,7 @@ class SQLValidatorApp:
         self.root.minsize(800, 500)
         self.root.configure(bg="#1f2329")
 
-        # Locate executable
+        # Locate executable cross-platform
         self.exe_path = self.find_executable()
 
         # UI Styling & Theme
@@ -40,18 +53,25 @@ class SQLValidatorApp:
         self.load_sample("Basic SELECT Query")
 
     def find_executable(self) -> str:
-        """Finds sql_validator.exe or sql_validator in the current directory."""
-        candidates = ["sql_validator.exe", "sql_validator", "./sql_validator.exe"]
+        """Finds the compiled C binary cross-platform."""
+        candidates = [
+            "sql_validator.exe",    # Windows
+            "./sql_validator.exe",  # Windows local
+            "sql_validator",        # Linux / macOS
+            "./sql_validator"       # Linux / macOS local
+        ]
         for cand in candidates:
             if os.path.exists(cand):
                 return os.path.abspath(cand)
-        return "sql_validator.exe"
+                
+        # If not found, return the platform-specific default for error messages
+        return "sql_validator.exe" if IS_WIN else "sql_validator"
 
     def configure_styles(self):
         self.style.configure("TFrame", background="#1f2329")
-        self.style.configure("TLabel", background="#1f2329", foreground="#d7dae0", font=("Segoe UI", 10))
-        self.style.configure("Header.TLabel", font=("Segoe UI", 11, "bold"), foreground="#61afef")
-        self.style.configure("TButton", font=("Segoe UI", 9, "bold"), padding=6)
+        self.style.configure("TLabel", background="#1f2329", foreground="#d7dae0", font=FONT_UI)
+        self.style.configure("Header.TLabel", font=FONT_UI_H, foreground="#61afef")
+        self.style.configure("TButton", font=FONT_BTN, padding=6)
         self.style.configure("TCheckbutton", background="#1f2329", foreground="#d7dae0")
         self.style.configure("TNotebook", background="#1f2329", tabmargins=[2, 5, 2, 0])
         self.style.configure("TNotebook.Tab", background="#242a33", foreground="#d7dae0", padding=[12, 6])
@@ -62,9 +82,9 @@ class SQLValidatorApp:
         )
 
         self.style.configure("Card.TFrame", background="#242a33", relief="flat")
-        self.style.configure("Card.TLabel", background="#242a33", foreground="#d7dae0", font=("Segoe UI", 10))
-        self.style.configure("CardHeader.TLabel", background="#242a33", foreground="#61afef", font=("Segoe UI", 11, "bold"))
-        self.style.configure("Accent.TLabel", background="#1f2329", foreground="#61afef", font=("Segoe UI", 10, "bold"))
+        self.style.configure("Card.TLabel", background="#242a33", foreground="#d7dae0", font=FONT_UI)
+        self.style.configure("CardHeader.TLabel", background="#242a33", foreground="#61afef", font=FONT_UI_H)
+        self.style.configure("Accent.TLabel", background="#1f2329", foreground="#61afef", font=FONT_UI_BOLD)
 
         # Treeview styling
         self.style.configure(
@@ -72,7 +92,7 @@ class SQLValidatorApp:
             background="#1f2933",
             fieldbackground="#1f2933",
             foreground="#d7dae0",
-            font=("Consolas", 10),
+            font=FONT_CODE,
             rowheight=24,
             bordercolor="#313846",
             lightcolor="#313846",
@@ -107,7 +127,7 @@ class SQLValidatorApp:
             values=samples,
             state="readonly",
             width=28,
-            font=("Segoe UI", 10),
+            font=FONT_UI,
         )
         sample_menu.pack(side=tk.LEFT, padx=(0, 14))
         sample_menu.bind("<<ComboboxSelected>>", lambda e: self.load_sample(self.sample_var.get()))
@@ -117,7 +137,7 @@ class SQLValidatorApp:
             text="▶ Run / Validate",
             bg="#61afef",
             fg="#1e1e1e",
-            font=("Segoe UI", 9, "bold"),
+            font=FONT_BTN,
             padx=12,
             relief=tk.FLAT,
             activebackground="#4a90e2",
@@ -140,11 +160,10 @@ class SQLValidatorApp:
         chk_tokens.pack(side=tk.RIGHT)
 
     def create_main_layout(self):
-        # PanedWindow for resizable split view (Left: SQL Editor, Right: Output/AST)
         paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         paned.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # ================= LEFT PANEL: SQL EDITOR =================
+        # ================= LEFT PANEL =================
         left_frame = ttk.Frame(paned, padding=10, style="Card.TFrame")
         paned.add(left_frame, weight=1)
 
@@ -153,7 +172,7 @@ class SQLValidatorApp:
         self.editor = tk.Text(
             left_frame,
             wrap=tk.NONE,
-            font=("Consolas", 11),
+            font=FONT_CODE_L,
             bg="#171b20",
             fg="#d7dae0",
             insertbackground="#ffffff",
@@ -167,7 +186,6 @@ class SQLValidatorApp:
             highlightcolor="#61afef",
         )
 
-        # Editor Scrollbars
         edit_sb_y = ttk.Scrollbar(left_frame, orient=tk.VERTICAL, command=self.editor.yview)
         edit_sb_x = ttk.Scrollbar(left_frame, orient=tk.HORIZONTAL, command=self.editor.xview)
         self.editor.configure(yscrollcommand=edit_sb_y.set, xscrollcommand=edit_sb_x.set)
@@ -176,20 +194,17 @@ class SQLValidatorApp:
         edit_sb_x.pack(side=tk.BOTTOM, fill=tk.X)
         self.editor.pack(fill=tk.BOTH, expand=True)
 
-        # ================= RIGHT PANEL: RESULTS & AST =================
+        # ================= RIGHT PANEL =================
         right_frame = ttk.Frame(paned, padding=10, style="Card.TFrame")
         paned.add(right_frame, weight=1)
 
-        # Tabbed Output Notebook
         self.notebook = ttk.Notebook(right_frame)
         self.notebook.pack(fill=tk.BOTH, expand=True)
 
-        # Tab 1: Interactive GUI Treeview
         self.tab_tree = ttk.Frame(self.notebook, style="Card.TFrame")
         self.notebook.add(self.tab_tree, text="🌳 Visual AST Tree")
         self.create_tree_tab()
 
-        # Tab 2: Raw ASCII Output & Diagnostics
         self.tab_output = ttk.Frame(self.notebook, style="Card.TFrame")
         self.notebook.add(self.tab_output, text="📋 Console Output")
         self.create_output_tab()
@@ -214,7 +229,7 @@ class SQLValidatorApp:
         self.console_output = tk.Text(
             out_frame,
             wrap=tk.NONE,
-            font=("Consolas", 10),
+            font=FONT_CODE,
             bg="#171b20",
             fg="#d7dae0",
             insertbackground="#ffffff",
@@ -234,10 +249,9 @@ class SQLValidatorApp:
         out_sb_x.pack(side=tk.BOTTOM, fill=tk.X)
         self.console_output.pack(fill=tk.BOTH, expand=True)
 
-        # Tags for console styling
-        self.console_output.tag_config("success", foreground="#98c379", font=("Consolas", 10, "bold"))
-        self.console_output.tag_config("error", foreground="#e06c75", font=("Consolas", 10, "bold"))
-        self.console_output.tag_config("header", foreground="#61afef", font=("Consolas", 10, "bold"))
+        self.console_output.tag_config("success", foreground="#98c379", font=(FONT_CODE[0], 10, "bold"))
+        self.console_output.tag_config("error", foreground="#e06c75", font=(FONT_CODE[0], 10, "bold"))
+        self.console_output.tag_config("header", foreground="#61afef", font=(FONT_CODE[0], 10, "bold"))
 
     def create_statusbar(self):
         self.statusbar = ttk.Frame(self.root, padding=(10, 8), style="Card.TFrame")
@@ -248,7 +262,7 @@ class SQLValidatorApp:
             text=" READY ",
             bg="#61afef",
             fg="#1e1e1e",
-            font=("Segoe UI", 9, "bold"),
+            font=FONT_BTN,
             padx=8,
             pady=4,
             relief=tk.FLAT,
@@ -259,10 +273,7 @@ class SQLValidatorApp:
         self.status_label = ttk.Label(self.statusbar, text=f" Executable: {os.path.basename(self.exe_path)}", style="CardHeader.TLabel")
         self.status_label.pack(side=tk.LEFT, padx=12)
 
-    # ================= LOGIC & EXECUTION =================
-
     def validate_sql(self):
-        """Saves current SQL input to a temp file, runs executable, and parses output."""
         query = self.editor.get("1.0", tk.END).strip()
         if not query:
             messagebox.showwarning("Empty Query", "Please enter a SQL query to validate.")
@@ -271,22 +282,19 @@ class SQLValidatorApp:
         if not os.path.exists(self.exe_path):
             messagebox.showerror(
                 "Executable Not Found",
-                f"Could not find '{self.exe_path}'.\n\nPlease compile sql_validator.exe first using gcc!",
+                f"Could not find '{self.exe_path}'.\n\nPlease compile the C code first using gcc or make!",
             )
             return
 
-        # Write query to temporary SQL file
         with tempfile.NamedTemporaryFile(mode="w", suffix=".sql", delete=False, encoding="utf-8") as tmp:
             tmp.write(query)
             tmp_path = tmp.name
 
         try:
-            # Build command args
             cmd = [self.exe_path, "--ast", "-f", tmp_path]
             if self.show_tokens_var.get():
                 cmd.insert(1, "--tokens")
 
-            # Execute binary
             process = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace"
             )
@@ -294,21 +302,19 @@ class SQLValidatorApp:
 
             clean_out = strip_ansi(stdout + stderr)
 
-            # Update Console View
             self.console_output.delete("1.0", tk.END)
 
             if "SUCCESS" in clean_out:
                 self.status_badge.config(text=" VALID SQL ", bg="#98c379", fg="#1e1e1e")
                 self.status_label.config(text=" Query parsed successfully without syntax errors.")
                 self.console_output.insert(tk.END, clean_out)
-                self.notebook.select(self.tab_tree)  # Switch to AST tab automatically
+                self.notebook.select(self.tab_tree) 
             else:
                 self.status_badge.config(text=" SYNTAX ERROR ", bg="#e06c75", fg="#ffffff")
                 self.status_label.config(text=" Syntax error detected! Check console output for caret position.")
                 self.console_output.insert(tk.END, clean_out, "error")
-                self.notebook.select(self.tab_output)  # Switch to error console
+                self.notebook.select(self.tab_output) 
 
-            # Parse Treeview AST
             self.populate_ast_treeview(clean_out)
 
         except Exception as e:
@@ -318,12 +324,9 @@ class SQLValidatorApp:
                 os.remove(tmp_path)
 
     def populate_ast_treeview(self, raw_output: str):
-        """Parses C ASCII tree structure and inserts it into interactive Treeview."""
-        # Clear existing tree
         for item in self.ast_tree.get_children():
             self.ast_tree.delete(item)
 
-        # Extract AST block from output
         if "ABSTRACT SYNTAX TREE" not in raw_output:
             return
 
@@ -335,50 +338,34 @@ class SQLValidatorApp:
                 continue
             if capture:
                 if "=======================================================" in line:
-                    if ast_lines:
-                        break
-                    else:
-                        continue
-                if line.strip():
-                    ast_lines.append(line)
+                    if ast_lines: break
+                    else: continue
+                if line.strip(): ast_lines.append(line)
 
         if not ast_lines:
             return
 
-        # Stack-based parent tracking according to indentation levels
-        # Root node
         root_label = ast_lines[0].strip()
         root_id = self.ast_tree.insert("", tk.END, text=f" 📂 {root_label}", open=True)
 
-        # Track stack: list of (depth, node_id)
         stack = [(0, root_id)]
 
         for line in ast_lines[1:]:
-            # Determine indentation depth
-            # Box characters: └── , ├── , │   , "    "
             prefix_match = re.match(r"^([│\s├└─]+)", line)
             if not prefix_match:
                 continue
 
             prefix = prefix_match.group(1)
-            # Each level adds 4 characters of indentation prefix
             depth = len(prefix) // 4
 
-            # Extract clean label text
             node_label = line[len(prefix) :].strip()
-            if not node_label:
-                continue
+            if not node_label: continue
 
-            # Select icon based on node category
             icon = "🏷️"
-            if "STMT" in node_label or "CLAUSE" in node_label:
-                icon = "📁"
-            elif "OPERATOR" in node_label or "JOIN" in node_label:
-                icon = "⚙️"
-            elif "COLUMN" in node_label or "TABLE" in node_label or "FIELD" in node_label:
-                icon = "🔹"
+            if "STMT" in node_label or "CLAUSE" in node_label: icon = "📁"
+            elif "OPERATOR" in node_label or "JOIN" in node_label: icon = "⚙️"
+            elif "COLUMN" in node_label or "TABLE" in node_label or "FIELD" in node_label: icon = "🔹"
 
-            # Pop stack until parent is found
             while stack and stack[-1][0] >= depth:
                 stack.pop()
 
@@ -387,7 +374,6 @@ class SQLValidatorApp:
             stack.append((depth, item_id))
 
     def load_sample(self, sample_name: str):
-        """Loads pre-defined SQL query templates into editor."""
         samples = {
             "Basic SELECT Query": "SELECT u.id, u.name, u.email\nFROM users u\nWHERE u.age >= 18 AND u.status = 'ACTIVE';",
             "SELECT with JOIN & GROUP BY": "SELECT d.department_name, COUNT(e.id) AS total_employees, AVG(e.salary) AS avg_salary\nFROM employees e\nINNER JOIN departments d ON e.dept_id = d.id\nWHERE e.is_active = 1\nGROUP BY d.department_name\nHAVING COUNT(e.id) > 5\nORDER BY avg_salary DESC\nLIMIT 10;",
